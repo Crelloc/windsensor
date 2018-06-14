@@ -3,7 +3,8 @@
 #include <SD.h>
 #include <Adafruit_ADS1015.h>
 #include "RTClib.h"
-
+int TCAADDR = 0x70; // Multiplexer address
+int FSAADDR = 0x58; // Force Sensor address
 
 const byte interruptPin = 2;
 volatile int counter; /**< # of pulses */
@@ -22,7 +23,13 @@ const int chipSelect      = 10;
 /**Wind dir variables*/
 const int sensorPin = A3;    /** input value: wind sensor analog */
 int sensorValue = 0;  /** variable to store the value coming from the sensor */
-
+void tcaselect(uint8_t i) {
+  if (i > 7) return;
+ 
+  Wire.beginTransmission(TCAADDR);
+  Wire.write(1 << i);
+  Wire.endTransmission();  
+}
 void setup(void)
 {
         
@@ -135,8 +142,8 @@ void pin_irq_handler()
 
 void loop(void)
 {
-    int16_t results_x, results_y; /**< load sensors values [voltage] for x and y axis*/
-    float lbs_x, lbs_y; /**< load sensor pounds */
+    int results_x, results_y; /**< load sensors values [voltage] for x and y axis*/
+    double lbs_x, lbs_y; /**< load sensor pounds */
     float x_mV, y_mV; /**< load sensor in milli-volts*/
     String str; /**< string to write to SD card*/
 
@@ -146,9 +153,18 @@ void loop(void)
         rw_flag = !rw_flag;
         
         DateTime now = rtc.now();
-        results_x    = ads.readADC_Differential_0_1(); 
-        results_y    = ads.readADC_Differential_2_3();
-    
+        //results_x    = ads.readADC_Differential_0_1(); 
+        //results_y    = ads.readADC_Differential_2_3();
+        tcaselect(2); 
+        Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
+        if(Wire.available()<=2) {  // reading in a max of two bytes 
+          results_x = Wire.read() << 2; // Reads the data, shift away status bits
+        }
+        tcaselect(6); 
+        Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
+        if(Wire.available()<=2) {  // reading in a max of two bytes 
+          results_y = Wire.read() << 2; // Reads the data, shift away status bits
+        }
         //read wind dir analog value
         sensorValue = analogRead(sensorPin);
 
@@ -156,12 +172,13 @@ void loop(void)
 #define  MULTIPLIER 0.0078125F /**< ADS1115  @ +/- 0.256V gain (16-bit results) */
 
         /** convert load sensors voltage to mV*/
-        x_mV   = results_x * MULTIPLIER;
-        y_mV   = results_y * MULTIPLIER;
+        //x_mV   = results_x * MULTIPLIER;
+        //y_mV   = results_y * MULTIPLIER;
         /** map mV range to lbs range: 0mv to 100mv -> 0lbs to 25lbs */
-        lbs_x        = x_mV / 100.0 * 25.0;
-        lbs_y        = y_mV / 100.0 * 25.0;
-    
+        //lbs_x        = x_mV / 100.0 * 25.0;
+        //lbs_y        = y_mV / 100.0 * 25.0;
+        lbs_x = ((xdata-8.0)/(252-8))*1.5; //data ranges from 8 to 252, 1.5 lb rated force range
+        lbs_y = ((ydata-12.0)/(252-12))*1.5; //data ranges from 12 to 252, 1.5 lb rated force range
         str = "";
         str += String(now.year(), DEC);
         str += '/';
