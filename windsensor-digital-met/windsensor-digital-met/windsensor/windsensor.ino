@@ -181,9 +181,9 @@ void loop(void)
         str += String(now.second(), DEC);  
         str += ", ";
         
-        str += String(lbs_x);
+        str += String(lbs_x, 5);
         str += ", ";
-        str += String(lbs_y);
+        str += String(lbs_y, 5);
         str += ", ";
         str += String(((float)sensorValue - 0.0f) / (1013.0f - 0.0f) * (360.0f - 0.0f));
         str += ", ";
