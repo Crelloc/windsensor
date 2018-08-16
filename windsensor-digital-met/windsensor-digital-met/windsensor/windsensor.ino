@@ -12,7 +12,7 @@ int FSAADDR = 0x58; // Force Sensor address
 int MCPADDR = 0x18; // Inside Temp Sensor address
 const byte interruptPin = 2;
 volatile int counter; /**< # of pulses */
-volatile long rpm;    /**< revs per min */
+volatile float rpm;    /**< revs per min */
 volatile bool rw_flag;
 volatile float V;     /**< Velocity [miles per hour] */
 volatile int g_cycles = 0; /**< # of cycles for timer1 */
@@ -39,15 +39,18 @@ void tcaselect(uint8_t i) {
 void setup(void)
 {
 
+    bool status;
+
 #ifdef DEBUG
     /** Open serial communications and wait for port to open: */
     while (!Serial) {
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
     Serial.begin(9600);
+    Serial.println("Debug flag set.");
 #endif
 
-    bool status;
+    
     status = bme.begin();  
 #ifdef DEBUG
     if (!status) {
@@ -144,8 +147,8 @@ ISR(TIMER1_OVF_vect)
     g_cycles++;
     
     if(PERIOD_THRESHOLD == g_cycles){
-        rpm     = counter * 15L;
-        rpm    /= 40L;
+        rpm     = counter * 15.0f;
+        rpm    /= 40.0f;
         V       = (rpm / 16.767f) + 0.6f;
         rw_flag = 1;
         counter = 0;
