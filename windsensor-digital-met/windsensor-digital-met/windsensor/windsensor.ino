@@ -1,3 +1,4 @@
+#define DEBUG
 #include <Wire.h>
 #include <SD.h>
 #include <Adafruit_Sensor.h>
@@ -37,28 +38,43 @@ void tcaselect(uint8_t i) {
 }
 void setup(void)
 {
-        
+
+#ifdef DEBUG
     /** Open serial communications and wait for port to open: */
     while (!Serial) {
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
     Serial.begin(9600);
+#endif
+
     bool status;
     status = bme.begin();  
+#ifdef DEBUG
     if (!status) {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
         while (1);
     }
-    if (!tempsensor.begin()) {
-    Serial.println("Couldn't find MCP9808!");
+#endif
+    status = tempsensor.begin();
+#ifdef DEBUG
+    if (!status) {
+        Serial.println("Couldn't find MCP9808!");
     while (1);
   }
-    if (! rtc.begin()) {
+
+#endif
+
+    status = rtc.begin();
+#ifdef DEBUG 
+    if (!status) {
         Serial.println("Couldn't find RTC");
         while (1);
     }
+#endif
 
-    if (! rtc.initialized()) {
+    status = rtc.initialized();
+#ifdef DEBUG   
+    if (!status) {
         Serial.println("RTC is NOT running!");
         // following line sets the RTC to the date & time this sketch was compiled
         // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -66,15 +82,19 @@ void setup(void)
         // January 21, 2014 at 3am you would call:
         // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
     }
-      
+#endif 
     
-    Serial.print("\nInitializing SD card...");
+   
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
     pinMode(10, OUTPUT);
     // we'll use the initialization code from the utility libraries
     // since we're just testing if the card is working!
-    if (!SD.begin(chipSelect)) {
+    status = SD.begin(chipSelect);
+
+#ifdef DEBUG
+    Serial.print("\nInitializing SD card...");
+    if (!status) {
         Serial.println("initialization failed. Things to check:");
         Serial.println("* is a card inserted?");
         Serial.println("* is your wiring correct?");
@@ -83,7 +103,7 @@ void setup(void)
     } else {
         Serial.println("Wiring is correct and a card is present.");
     }
-
+#endif
 /** initialize timer1 - 16 bit (65536) */
     noInterrupts();           // disable all interrupts
     TCCR1A  = 0;
@@ -103,17 +123,18 @@ void setup(void)
     rw_flag = 0;
     V       = 0.0f;
     
-
+#ifndef DEBUG
 #define WRITE_TO_SDCARD(text)                                               \
     if ((dataFile = SD.open(FILE_PATH, FILE_WRITE))){                  \
         dataFile.println(text);                                             \
         dataFile.close();                                                   \
-    } else {                                                                \
-        Serial.println("Failed to open or create " + String(FILE_PATH));    \
-    }                       
-
+    }                      
+#endif
+#ifndef DEBUG
     WRITE_TO_SDCARD("time, x_lbs, y_lbs, dir, rpm, Vel, Inside temp (C), Outside temp (C), Pressure (Pa), Humidity (%)");
+#else
     Serial.println("time, x_lbs, y_lbs, dir, rpm, Vel, Inside temp (C), Outside temp (C), Pressure (Pa), Humidity (%)");
+#endif
 }
 
 ISR(TIMER1_OVF_vect)        
@@ -199,8 +220,11 @@ void loop(void)
         str += String(bme.readPressure()/ 100.0);
         str += ", ";
         str += String(bme.readHumidity());
+
+#ifdef DEBUG
         Serial.println(str);
+#else
         WRITE_TO_SDCARD(str);
-        
+#endif   
         }
 }
