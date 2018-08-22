@@ -16,6 +16,9 @@ volatile float rpm;    /**< revs per min */
 volatile bool rw_flag;
 volatile float V;     /**< Velocity [miles per hour] */
 volatile int g_cycles = 0; /**< # of cycles for timer1 */
+float avg_results_x = 0, avg_results_y = 0; /**< load sensors values [voltage] for x and y axis*/
+int avg_counter = 0; 
+double sinSum = 0, cosSum = 0;
 
 RTC_PCF8523      rtc;
 //Adafruit_ADS1115 ads;  /**< Use this for the 16-bit version */
@@ -161,36 +164,59 @@ void pin_irq_handler()
     ++counter;
 }
 
+#define deg2rad(deg) ((deg * 71.0) / 4068.0)
+#define rad2deg(rad) ((rad * 4068.0) / 71.0)
+
+uint16_t MAX_FORCE_VAL = (1U<<14) - 1;
+
 void loop(void)
 {
-    int results_x, results_y; /**< load sensors values [voltage] for x and y axis*/
-    double lbs_x, lbs_y; /**< load sensor pounds */
-    String str; /**< string to write to SD card*/
+    double deg;
+    
+    tcaselect(2); 
+    Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
+    if(Wire.available()<=2) {  // reading in a max of two bytes 
+      avg_results_x += ((Wire.read() << 2) / (float)MAX_FORCE_VAL); // Reads the data, shift away status bits
+    }
+    tcaselect(6); 
+    Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
+    if(Wire.available()<=2) {  // reading in a max of two bytes 
+      avg_results_y += ((Wire.read() << 2) / (float)MAX_FORCE_VAL); // Reads the data, shift away status bits
+    }
 
+   //read wind dir analog value
+    sensorValue = analogRead(sensorPin);
+
+    deg = (sensorValue - 0.0) / (1013.0 - 0.0) * (360.0 - 0.0);
+    
+    sinSum += sin(deg2rad(deg));
+    cosSum += cos(deg2rad(deg));
+
+    ++avg_counter;
 
     if(rw_flag){
-      
+ 
+        String str; /**< string to write to SD card*/
+        float lbs_x, lbs_y; /**< load sensor pounds */
+                
         rw_flag = !rw_flag;
         
         DateTime now = rtc.now();
-        //results_x    = ads.readADC_Differential_0_1(); 
-        //results_y    = ads.readADC_Differential_2_3();
-        tcaselect(2); 
-        Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
-        if(Wire.available()<=2) {  // reading in a max of two bytes 
-          results_x = Wire.read() << 2; // Reads the data, shift away status bits
-        }
-        tcaselect(6); 
-        Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
-        if(Wire.available()<=2) {  // reading in a max of two bytes 
-          results_y = Wire.read() << 2; // Reads the data, shift away status bits
-        }
-        //read wind dir analog value
-        sensorValue = analogRead(sensorPin);
-        
 
-        lbs_x = ((results_x-8.0)/(252-8))*1.5; //data ranges from 8 to 252, 1.5 lb rated force range
-        lbs_y = ((results_y-12.0)/(252-12))*1.5; //data ranges from 12 to 252, 1.5 lb rated force range
+        /**compute average deg*/
+        deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
+
+        /**get the average load cell results*/        
+        avg_results_x /= avg_counter;
+        avg_results_y /= avg_counter;
+
+        /**unscale*/
+        avg_results_x *= MAX_FORCE_VAL;
+        avg_results_y *= MAX_FORCE_VAL;
+
+        lbs_x = ((avg_results_x-8.0)/(252-8))*1.5; //data ranges from 8 to 252, 1.5 lb rated force range
+        lbs_y = ((avg_results_y-12.0)/(252-12))*1.5; //data ranges from 12 to 252, 1.5 lb rated force range
+        
         str = "";
         str += String(now.year(), DEC);
         str += '/';
@@ -209,7 +235,7 @@ void loop(void)
         str += ", ";
         str += String(lbs_y, 5);
         str += ", ";
-        str += String(((float)sensorValue - 0.0f) / (1013.0f - 0.0f) * (360.0f - 0.0f));
+        str += String(deg);
         str += ", ";
         str += String(rpm);
         str += ", ";
@@ -228,6 +254,13 @@ void loop(void)
         Serial.println(str);
 #else
         WRITE_TO_SDCARD(str);
-#endif   
-        }
+#endif  
+
+        avg_results_x = 0;
+        avg_results_y = 0;
+        cosSum = 0;
+        sinSum = 0;
+        avg_counter = 0;
+        
+     }
 }
