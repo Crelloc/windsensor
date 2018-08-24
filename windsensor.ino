@@ -218,9 +218,9 @@ void loop(void)
         str += ':';
         str += String(now.second(), DEC);  
         str += ", ";
-        str += String(kg_x, 4);
+        str += String(kg_x*100, 4);
         str += ", ";
-        str += String(kg_y, 4);
+        str += String(kg_y*100, 4);
         str += ", ";
         /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
         str += String(deg);
