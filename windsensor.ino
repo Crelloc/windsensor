@@ -100,7 +100,7 @@ void setup(void)
     interrupts();             // enable all interrupts
 
 /** initialize timer0 - rising edge triggered interrupt - pin 2 */
-    attachInterrupt(digitalPinToInterrupt(interruptPin), pin_irq_handler, RISING );
+//    attachInterrupt(digitalPinToInterrupt(interruptPin), pin_irq_handler, RISING );
 
     /** initialize variables for interrupts */
     counter = 0;
@@ -170,7 +170,7 @@ void loop(void)
 //    float lbs_x, lbs_y; /**< load sensor pounds */
 //    float x_mV, y_mV; /**< load sensor in milli-volts*/
     String str; /**< string to write to SD card*/
-    double deg;
+    double deg = 0;
     float pressureKPA = 0, temperatureC = 0;
 //   char buf[]
     /** scaling adc values before getting the sums
@@ -179,13 +179,13 @@ void loop(void)
     avg_adc_x    += (x_scale.read() / (float)MAX_ADC_VAL); 
     avg_adc_y    += (y_scale.read() / (float)MAX_ADC_VAL);
 
-    /** read wind dir analog value */
-    sensorValue = analogRead(sensorPin);
-    /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
-    deg = (sensorValue - 0.0) / (1013.0 - 0.0) * (360.0 - 0.0);
-
-    sinSum += sin(deg2rad(deg));
-    cosSum += cos(deg2rad(deg));
+//    /** read wind dir analog value */
+//    sensorValue = analogRead(sensorPin);
+//    /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
+//    deg = (sensorValue - 0.0) / (1013.0 - 0.0) * (360.0 - 0.0);
+//
+//    sinSum += sin(deg2rad(deg));
+//    cosSum += cos(deg2rad(deg));
     
     ++avg_counter;
 
@@ -197,8 +197,8 @@ void loop(void)
         /*get pressure and temp*/
         mpl115a2.getPT(&pressureKPA,&temperatureC);
         
-        /**compute average deg*/
-        deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
+//        /**compute average deg*/
+//        deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
         /**get the average adc results */
         avg_adc_x /= avg_counter;
         avg_adc_y /= avg_counter;
@@ -222,9 +222,9 @@ void loop(void)
         str += ':';
         str += String(now.second(), DEC);  
         str += ", ";
-        str += String(kg_x*100, 4);
+        str += String(kg_x, 4);
         str += ", ";
-        str += String(kg_y*100, 4);
+        str += String(kg_y, 4);
         str += ", ";
         /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
         str += String(deg);
