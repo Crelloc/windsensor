@@ -1,8 +1,14 @@
+/*
+Inline load cell Project
+
+
+*/
+
 #include <Adafruit_MPL115A2.h>
-#include <stdint.h>
-#include <math.h>
-#include <Wire.h>
-#include <SPI.h>
+//#include <stdint.h>
+//#include <math.h>
+//#include <Wire.h>
+//#include <SPI.h>
 #include <SD.h>
 #include "RTClib.h"
 #include "HX711.h"
@@ -15,8 +21,7 @@
 HX711 x_scale(DOUTA, CLKA);
 HX711 y_scale(DOUTB, CLKB);
 
-//#define zero_factor 8421804
-#define calibration_factor = 2188.0
+#define calibration_factor  998050.0f //Calibration factor for 1kg load cell
 
 Adafruit_MPL115A2 mpl115a2; //SCL analog pin 5, SDA analog pin 4
 
@@ -80,10 +85,9 @@ void setup(void)
         Serial.println("Wiring is correct and a card is present.");
     }
 
-    //x_scale.set_scale(calibration_factor);
-    //y_scale.set_scale(calibration_factor);
-    //x_scale.set_offset(zero_factor);
-    //y_scale.set_offset(zero_factor);
+    x_scale.set_scale(calibration_factor);
+    y_scale.set_scale(calibration_factor);
+
     
 /** initialize timer1 - 16 bit (65536) */
     noInterrupts();           // disable all interrupts
