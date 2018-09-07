@@ -1,4 +1,4 @@
-#define DEBUG
+//#define DEPLOYMENT
 #include <Wire.h>
 #include <SD.h>
 #include <Adafruit_Sensor.h>
@@ -7,80 +7,110 @@
 #include "Adafruit_MCP9808.h"
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BME280 bme; 
-int TCAADDR = 0x70; // Multiplexer address
-int FSAADDR = 0x58; // Force Sensor address
-int MCPADDR = 0x18; // Inside Temp Sensor address
-const byte interruptPin = 2;
-volatile int counter; /**< # of pulses */
-volatile float rpm;    /**< revs per min */
+//int MCPADDR = 0x18; // Inside Temp Sensor address
+
+volatile int counter;                         /**< # of pulses */
+volatile float rpm;                           /**< revs per min */
 volatile bool rw_flag;
-volatile float V;     /**< Velocity [miles per hour] */
-volatile int g_cycles = 0; /**< # of cycles for timer1 */
-float avg_results_x = 0, avg_results_y = 0; /**< load sensors values [voltage] for x and y axis*/
+volatile float V;                             /**< Velocity [miles per hour] */
+volatile int g_cycles = 0;                    /**< # of cycles for timer1 */
+float avg_results_x = 0, avg_results_y = 0;   /**< load sensors values [voltage] for x and y axis*/
 int avg_counter = 0; 
 double sinSum = 0, cosSum = 0;
 
 RTC_PCF8523      rtc;
-//Adafruit_ADS1115 ads;  /**< Use this for the 16-bit version */
 
 // Create the MCP9808 temperature sensor object
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
-const char  FILE_PATH[]   = "datalog.txt";
-const int chipSelect      = 10;
-File dataFile;
-/**Wind dir variables*/
-const int sensorPin = A3;    /** input value: wind sensor analog */
-int sensorValue = 0;  /** variable to store the value coming from the sensor */
 
 void tcaselect(uint8_t i) {
+  int TCAADDR = 0x70; // Multiplexer address
+
   if (i > 7) return;
  
   Wire.beginTransmission(TCAADDR);
   Wire.write(1 << i);
   Wire.endTransmission();  
 }
+
+
+void logToSD(float* lbs_x, float* lbs_y, uint16_t* deg)
+{
+    String str;
+    File dataFile;
+    DateTime now = rtc.now();
+
+    str = "";
+    str += String(now.year(), DEC);
+    str += '/';
+    str += String(now.month(), DEC);
+    str += '/';
+    str += String(now.day(), DEC);
+    str += " ";
+    str += String(now.hour(), DEC);
+    str += ':';
+    str += String(now.minute(), DEC);
+    str += ':';
+    str += String(now.second(), DEC);  
+    str += ", ";
+    str += String(*lbs_x, 5);
+    str += ", ";
+    str += String(*lbs_y, 5);
+    str += ", ";
+    str += String(*deg);
+    str += ", ";
+    str += String(rpm);
+    str += ", ";
+    str += String(V);
+    str += ", ";
+    str += String(tempsensor.readTempC()); 
+    str += ", "; 
+    str += String(bme.readTemperature());
+    str += ", ";
+    str += String(bme.readPressure()/ 100.0);
+    str += ", ";
+    str += String(bme.readHumidity());
+
+    dataFile = SD.open("datalog.txt", FILE_WRITE);
+    if(dataFile){
+        dataFile.println(str);                                             
+        dataFile.close();
+    } else{
+        Serial.println("Failed to open or create datalog.txt");       
+    }
+
+     Serial.println(str);
+
+}
 void setup(void)
 {
+    File dataFile;
+    const byte interruptPin = 2;
+    const int chipSelect    = 4;
 
-    bool status;
-
-#ifdef DEBUG
+    
     /** Open serial communications and wait for port to open: */
     while (!Serial) {
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
     Serial.begin(9600);
-    Serial.println("Debug flag set.");
-#endif
 
-    
-    status = bme.begin();  
-#ifdef DEBUG
-    if (!status) {
+    if (!bme.begin()) {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
-        while (1);
+        //while (1);
     }
-#endif
-    status = tempsensor.begin();
-#ifdef DEBUG
-    if (!status) {
+
+    if (!tempsensor.begin()) {
         Serial.println("Couldn't find MCP9808!");
-    while (1);
-  }
-
-#endif
-
-    status = rtc.begin();
-#ifdef DEBUG 
-    if (!status) {
-        Serial.println("Couldn't find RTC");
-        while (1);
+        //while (1);
     }
-#endif
 
-    status = rtc.initialized();
-#ifdef DEBUG   
-    if (!status) {
+    if (!rtc.begin()) {
+        Serial.println("Couldn't find RTC");
+        //while (1);
+    }
+
+    if (!rtc.initialized()) {
         Serial.println("RTC is NOT running!");
         // following line sets the RTC to the date & time this sketch was compiled
         // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -88,28 +118,24 @@ void setup(void)
         // January 21, 2014 at 3am you would call:
         // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
     }
-#endif 
+
     
-   
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
-    pinMode(10, OUTPUT);
+    pinMode(chipSelect, OUTPUT);
     // we'll use the initialization code from the utility libraries
     // since we're just testing if the card is working!
-    status = SD.begin(chipSelect);
 
-#ifdef DEBUG
     Serial.print("\nInitializing SD card...");
-    if (!status) {
+    if (!SD.begin(chipSelect)) {
         Serial.println("initialization failed. Things to check:");
         Serial.println("* is a card inserted?");
         Serial.println("* is your wiring correct?");
         Serial.println("* did you change the chipSelect pin to match your shield or module?");
-       // return;
     } else {
         Serial.println("Wiring is correct and a card is present.");
     }
-#endif
+
 /** initialize timer1 - 16 bit (65536) */
     noInterrupts();           // disable all interrupts
     TCCR1A  = 0;
@@ -128,19 +154,19 @@ void setup(void)
     rpm     = 0;
     rw_flag = 0;
     V       = 0.0f;
+
+    dataFile = SD.open("datalog.txt", FILE_WRITE);
+    {
+        String header = "time, x_lbs, y_lbs, dir, rpm, Vel, Inside temp (C), Outside temp (C), Pressure (Pa), Humidity (%)";
+
+        if (dataFile){                  
+            dataFile.println(header);                                             
+            dataFile.close();                                                   
+        }                      
     
-#ifndef DEBUG
-#define WRITE_TO_SDCARD(text)                                               \
-    if ((dataFile = SD.open(FILE_PATH, FILE_WRITE))){                  \
-        dataFile.println(text);                                             \
-        dataFile.close();                                                   \
-    }                      
-#endif
-#ifndef DEBUG
-    WRITE_TO_SDCARD("time, x_lbs, y_lbs, dir, rpm, Vel, Inside temp (C), Outside temp (C), Pressure (Pa), Humidity (%)");
-#else
-    Serial.println("time, x_lbs, y_lbs, dir, rpm, Vel, Inside temp (C), Outside temp (C), Pressure (Pa), Humidity (%)");
-#endif
+        Serial.println(header);
+    }
+
 }
 
 ISR(TIMER1_OVF_vect)        
@@ -167,12 +193,12 @@ void pin_irq_handler()
 #define deg2rad(deg) ((deg * 71.0) / 4068.0)
 #define rad2deg(rad) ((rad * 4068.0) / 71.0)
 
-uint16_t MAX_FORCE_VAL = (1U<<14) - 1;
+#define MAX_FORCE_VAL  ((1U<<14) - 1)
 
-void loop(void)
+void readforcesensors()
 {
-    double deg;
-    
+    int FSAADDR = 0x58; // Force Sensor address
+
     tcaselect(2); 
     Wire.requestFrom(FSAADDR,2); // Request the transmitted two bytes
     if(Wire.available()<=2) {  // reading in a max of two bytes 
@@ -183,79 +209,50 @@ void loop(void)
     if(Wire.available()<=2) {  // reading in a max of two bytes 
       avg_results_y += ((Wire.read() << 2) / (float)MAX_FORCE_VAL); // Reads the data, shift away status bits
     }
+}
 
-   //read wind dir analog value
-    sensorValue = analogRead(sensorPin);
-
-    deg = (sensorValue - 0.0) / (1013.0 - 0.0) * (360.0 - 0.0);
+void loop(void)
+{
     
-    sinSum += sin(deg2rad(deg));
-    cosSum += cos(deg2rad(deg));
+    readforcesensors();
+    
+    {/**read wind dir analog value and average dir*/
+        double deg;
+        //
+        const int sensorPin = A3;
+        deg = (analogRead(sensorPin) - 0.0) / (1013.0 - 0.0) * (360.0 - 0.0);
+        sinSum += sin(deg2rad(deg));
+        cosSum += cos(deg2rad(deg));
+        ++avg_counter;
+    }
 
-    ++avg_counter;
+    
 
     if(rw_flag){
- 
-        String str; /**< string to write to SD card*/
+          
+        uint16_t deg = 0;
         float lbs_x, lbs_y; /**< load sensor pounds */
                 
         rw_flag = !rw_flag;
         
-        DateTime now = rtc.now();
+        {/**get the average load cell results*/        
+            avg_results_x /= avg_counter;
+            avg_results_y /= avg_counter;
+    
+            /**unscale*/
+            avg_results_x *= MAX_FORCE_VAL;
+            avg_results_y *= MAX_FORCE_VAL;
+    
+            lbs_x = ((avg_results_x-8.0)/(252-8))*1.5; //data ranges from 8 to 252, 1.5 lb rated force range
+            lbs_y = ((avg_results_y-12.0)/(252-12))*1.5; //data ranges from 12 to 252, 1.5 lb rated force range
+        }
 
         /**compute average deg*/
         deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
-
-        /**get the average load cell results*/        
-        avg_results_x /= avg_counter;
-        avg_results_y /= avg_counter;
-
-        /**unscale*/
-        avg_results_x *= MAX_FORCE_VAL;
-        avg_results_y *= MAX_FORCE_VAL;
-
-        lbs_x = ((avg_results_x-8.0)/(252-8))*1.5; //data ranges from 8 to 252, 1.5 lb rated force range
-        lbs_y = ((avg_results_y-12.0)/(252-12))*1.5; //data ranges from 12 to 252, 1.5 lb rated force range
         
-        str = "";
-        str += String(now.year(), DEC);
-        str += '/';
-        str += String(now.month(), DEC);
-        str += '/';
-        str += String(now.day(), DEC);
-        str += " ";
-        str += String(now.hour(), DEC);
-        str += ':';
-        str += String(now.minute(), DEC);
-        str += ':';
-        str += String(now.second(), DEC);  
-        str += ", ";
-        
-        str += String(lbs_x, 5);
-        str += ", ";
-        str += String(lbs_y, 5);
-        str += ", ";
-        str += String(deg);
-        str += ", ";
-        str += String(rpm);
-        str += ", ";
-        str += String(V);
-        str += ", ";
-        /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
-        str += String(tempsensor.readTempC()); 
-        str += ", "; 
-        str += String(bme.readTemperature());
-        str += ", ";
-        str += String(bme.readPressure()/ 100.0);
-        str += ", ";
-        str += String(bme.readHumidity());
+        logToSD(&lbs_x, &lbs_y, &deg);
 
-#ifdef DEBUG
-        Serial.println(str);
-#else
-        WRITE_TO_SDCARD(str);
-#endif  
-
+        /**initilize*/
         avg_results_x = 0;
         avg_results_y = 0;
         cosSum = 0;
