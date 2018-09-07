@@ -1,7 +1,7 @@
 /*
 Inline load cell Project
 Author: Thomas Turner
-Last Modified: 09-06-18
+Last Modified: 09-07-18
 */
 
 #include <Adafruit_MPL115A2.h>
@@ -15,61 +15,61 @@ Last Modified: 09-06-18
 #define DOUTB   6                           // USED FOR LOAD CELL ON Y-AXIS
 #define CLKB    5
 
-HX711 x_scale(DOUTA, CLKA);
-HX711 y_scale(DOUTB, CLKB);
+static HX711 x_scale(DOUTA, CLKA);
+static HX711 y_scale(DOUTB, CLKB);
 
 #define calibration_factor  998050.0f       //Calibration factor for 1kg load cell
 
-Adafruit_MPL115A2 mpl115a2;                 //SCL analog pin 5, SDA analog pin 4
+static Adafruit_MPL115A2 mpl115a2;                 //SCL analog pin 5, SDA analog pin 4
 
-volatile int counter;                       /**< # of pulses */
-volatile long rpm;                          /**< revs per min */
-volatile bool rw_flag;
-volatile float V;                           /**< Velocity [miles per hour] */
-volatile int g_cycles = 0;                  /**< # of cycles for timer1 */
-float avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors dat output adc for x and y axis*/
-int avg_counter = 0;                        /**< counter to compute the average for results_x and _y*/
-double sinSum = 0, cosSum = 0;
-RTC_PCF8523      rtc;
+static volatile int counter;                       /**< # of pulses */
+static volatile long rpm;                          /**< revs per min */
+static volatile bool rw_flag;
+static volatile float V;                           /**< Velocity [miles per hour] */
+static volatile int g_cycles = 0;                  /**< # of cycles for timer1 */
+static float avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors dat output adc for x and y axis*/
+static int avg_counter = 0;                        /**< counter to compute the average for results_x and _y*/
+static double sinSum = 0, cosSum = 0;
+static RTC_PCF8523      rtc;
 
 
-void logToSD(float xkg, float ykg, int deg)
+static void logToSD(int* deg)
 {
     String str;
     float pressureKPA = 0, temperatureC = 0;
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
-//    DateTime now = rtc.now();
+    DateTime now = rtc.now();
     
     /*get pressure and temp*/
-//    mpl115a2.getPT(&pressureKPA,&temperatureC);
+    mpl115a2.getPT(&pressureKPA,&temperatureC);
     
     if(dataFile){
         str = "";
-//        str += String(now.year(), DEC);
-//        str += '/';
-//        str += String(now.month(), DEC);
-//        str += '/';
-//        str += String(now.day(), DEC);
-//        str += " ";
-//        str += String(now.hour(), DEC);
-//        str += ':';
-//        str += String(now.minute(), DEC);
-//        str += ':';
-//        str += String(now.second(), DEC);  
-//        str += ", ";
-        str += String(xkg, 4);
+        str += String(now.year(), DEC);
+        str += '/';
+        str += String(now.month(), DEC);
+        str += '/';
+        str += String(now.day(), DEC);
+        str += " ";
+        str += String(now.hour(), DEC);
+        str += ':';
+        str += String(now.minute(), DEC);
+        str += ':';
+        str += String(now.second(), DEC);  
         str += ", ";
-        str += String(ykg, 4);
+        str += String(avg_adc_x, 4);
         str += ", ";
-        str += String(deg);
+        str += String(avg_adc_y, 4);
+        str += ", ";
+        str += String(*deg);
         str += ", ";
         str += String(rpm);
         str += ", ";
         str += String(V);
-//        str += ", ";
-//        str += String(pressureKPA, 4);
-//        str += ", ";
-//        str += String(temperatureC, 1);
+        str += ", ";
+        str += String(pressureKPA, 4);
+        str += ", ";
+        str += String(temperatureC, 1);
 
         dataFile.println(str);                                             
         dataFile.close();
@@ -83,7 +83,7 @@ void logToSD(float xkg, float ykg, int deg)
 
 void setup(void)
 {
-    const int chipSelect = 4;
+    const int chipSelect = 10;
     
     /** Open serial communications and wait for port to open: */
     while (!Serial) {
@@ -176,7 +176,7 @@ ISR(TIMER1_OVF_vect)
     }
 }
 
-void pin_irq_handler()
+static void pin_irq_handler()
 {
     ++counter;
 }
@@ -203,12 +203,10 @@ void pin_irq_handler()
 //     while(1){}
 //}
 
-unsigned long MAX_ADC_VAL = (1UL<<23) - 1;
+#define MAX_ADC_VAL ((1UL<<23) - 1)
 
 void loop(void)
 {   
-    ++avg_counter;
-    
     {
         /*HX711 read() will hang the program if load cells aren't connected*/
 //        avg_adc_x    += (x_scale.read() / (float)MAX_ADC_VAL); 
@@ -222,9 +220,9 @@ void loop(void)
         /** read wind dir analog value and Map*/
         /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
         deg = (analogRead(sensorPin) - 0.0f) / (1013.0f - 0.0f) * (360.0f - 0.0f);
-    
         sinSum += sin(deg2rad(deg));
         cosSum += cos(deg2rad(deg));
+        ++avg_counter;
     }
     
     if(rw_flag){
@@ -241,7 +239,7 @@ void loop(void)
         avg_adc_x *= MAX_ADC_VAL;
         avg_adc_y *= MAX_ADC_VAL;
         
-        logToSD(avg_adc_x, avg_adc_y, deg);
+        logToSD(&deg);
         /** initialize variables for averageing*/
         avg_adc_x = 0;
         avg_adc_y = 0;
