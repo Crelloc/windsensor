@@ -6,24 +6,25 @@
 #include "RTClib.h" 
 #include "Adafruit_MCP9808.h"
 #define SEALEVELPRESSURE_HPA (1013.25)
-Adafruit_BME280 bme; 
-//int MCPADDR = 0x18; // Inside Temp Sensor address
 
-volatile int counter;                         /**< # of pulses */
-volatile float rpm;                           /**< revs per min */
-volatile bool rw_flag;
-volatile float V;                             /**< Velocity [miles per hour] */
-volatile int g_cycles = 0;                    /**< # of cycles for timer1 */
-float avg_results_x = 0, avg_results_y = 0;   /**< load sensors values [voltage] for x and y axis*/
-int avg_counter = 0; 
-double sinSum = 0, cosSum = 0;
+static Adafruit_BME280 bme; 
+//static int MCPADDR = 0x18; // Inside Temp Sensor address
 
-RTC_PCF8523      rtc;
+static volatile int counter;                         /**< # of pulses */
+static volatile float rpm;                           /**< revs per min */
+static volatile bool rw_flag;
+static volatile float V;                             /**< Velocity [miles per hour] */
+static volatile int g_cycles = 0;                    /**< # of cycles for timer1 */
+static float avg_results_x = 0, avg_results_y = 0;   /**< load sensors values [voltage] for x and y axis*/
+static int avg_counter = 0; 
+static double sinSum = 0, cosSum = 0;
+
+static RTC_PCF8523      rtc;
 
 // Create the MCP9808 temperature sensor object
-Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
+static Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
 
-void tcaselect(uint8_t i) {
+static void tcaselect(uint8_t i) {
   int TCAADDR = 0x70; // Multiplexer address
 
   if (i > 7) return;
@@ -34,7 +35,7 @@ void tcaselect(uint8_t i) {
 }
 
 
-void logToSD(float* lbs_x, float* lbs_y, uint16_t* deg)
+static void logToSD(float* lbs_x, float* lbs_y, uint16_t* deg)
 {
     String str;
     File dataFile;
@@ -185,7 +186,7 @@ ISR(TIMER1_OVF_vect)
     }
 }
 
-void pin_irq_handler()
+static void pin_irq_handler()
 {
     ++counter;
 }
@@ -195,7 +196,7 @@ void pin_irq_handler()
 
 #define MAX_FORCE_VAL  ((1U<<14) - 1)
 
-void readforcesensors()
+static void readforcesensors()
 {
     int FSAADDR = 0x58; // Force Sensor address
 
