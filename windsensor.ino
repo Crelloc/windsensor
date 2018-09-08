@@ -9,16 +9,15 @@ Last Modified: 09-07-18
 #include <SD.h>
 #include "RTClib.h"
 #include "HX711.h"
-
 #define DOUTA   4                           // USED FOR LOAD CELL ON X-AXIS
 #define CLKA    3
 #define DOUTB   6                           // USED FOR LOAD CELL ON Y-AXIS
 #define CLKB    5
 
+      
 static HX711 x_scale(DOUTA, CLKA);
 static HX711 y_scale(DOUTB, CLKB);
-
-#define calibration_factor  998050.0f       //Calibration factor for 1kg load cell
+#define calibration_factor  1.0f       //998050.0f Calibration factor for 1kg load cell
 
 static Adafruit_MPL115A2 mpl115a2;                 //SCL analog pin 5, SDA analog pin 4
 
@@ -27,7 +26,7 @@ static volatile long rpm;                          /**< revs per min */
 static volatile bool rw_flag;
 static volatile float V;                           /**< Velocity [miles per hour] */
 static volatile int g_cycles = 0;                  /**< # of cycles for timer1 */
-static float avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors dat output adc for x and y axis*/
+static double avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors dat output adc for x and y axis*/
 static int avg_counter = 0;                        /**< counter to compute the average for results_x and _y*/
 static double sinSum = 0, cosSum = 0;
 static RTC_PCF8523      rtc;
@@ -89,7 +88,7 @@ void setup(void)
     while (!Serial) {
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
-    Serial.begin(57600);
+    Serial.begin(9600);
     Serial.println("testing!");
     mpl115a2.begin(); //for pressure and temp sensor
     
@@ -97,15 +96,16 @@ void setup(void)
         Serial.println("Couldn't find RTC");
         while (1);
     }
-//    if (! rtc.initialized()) {
-//        Serial.println("RTC is NOT running!");
-//        // following line sets the RTC to the date & time this sketch was compiled
-//        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-//        // This line sets the RTC with an explicit date & time, for example to set
-//        // January 21, 2014 at 3am you would call:
-//        // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-//    }
-//    
+    if (! rtc.initialized()) {
+        Serial.println("RTC is NOT running!");
+        // following line sets the RTC to the date & time this sketch was compiled
+        //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+        // This line sets the RTC with an explicit date & time, for example to set
+        // January 21, 2014 at 3am you would call:
+        // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+    }
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
 
     Serial.print("\nInitializing SD card...");
     
@@ -209,8 +209,8 @@ void loop(void)
 {   
     {
         /*HX711 read() will hang the program if load cells aren't connected*/
-//        avg_adc_x    += (x_scale.read() / (float)MAX_ADC_VAL); 
-//        avg_adc_y    += (y_scale.read() / (float)MAX_ADC_VAL);
+        avg_adc_x    += (x_scale.read() / (double)MAX_ADC_VAL); 
+        avg_adc_y    += (y_scale.read() / (double)MAX_ADC_VAL);
     }
 
     {
