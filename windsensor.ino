@@ -1,45 +1,67 @@
-/*
-Inline load cell Project
-Author: Thomas Turner
-Last Modified: 09-07-18
-*/
+/**
+ * @file windsensor.ino
+ *Inline load cell Project
+ *Author: Thomas Turner (thomastdt@gmail.com)
+ *Last Modified: 09-10-18
+ */
 
 #include <Adafruit_MPL115A2.h>
 #include <SPI.h>
 #include <SD.h>
 #include "RTClib.h"
 #include "HX711.h"
-#define DOUTA   4                           // USED FOR LOAD CELL ON X-AXIS
-#define CLKA    3
-#define DOUTB   6                           // USED FOR LOAD CELL ON Y-AXIS
-#define CLKB    5
+#define DOUTA   4                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
+#define CLKA    3                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
+#define DOUTB   6                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
+#define CLKB    5                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
 
-      
+//! Using HX711 constructor
+/*!
+ The HX711 load cell amplifier will be connected to digital pins of arduino.
+ \param DOUTA the pin number to arduino digital
+ \param CLKA the pin number to arduino digital
+*/
 static HX711 x_scale(DOUTA, CLKA);
+
+//! Using HX711 constructor
+/*!
+ The HX711 load cell amplifier will be connected to digital pins of arduino.
+ \param DOUTA the pin number to arduino digital
+ \param CLKA the pin number to arduino digital
+*/
 static HX711 y_scale(DOUTB, CLKB);
-#define calibration_factor  1.0f       //998050.0f Calibration factor for 1kg load cell
 
-static Adafruit_MPL115A2 mpl115a2;                 //SCL analog pin 5, SDA analog pin 4
+#define calibration_factor  1.0f                   /*!< Calibration factor for load cells using hx711 */
 
-static volatile int counter;                       /**< # of pulses */
+static Adafruit_MPL115A2 mpl115a2;                 
+
+static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
 static volatile long rpm;                          /**< revs per min */
 static volatile bool rw_flag;
 static volatile float V;                           /**< Velocity [miles per hour] */
-static volatile int g_cycles = 0;                  /**< # of cycles for timer1 */
-static double avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors dat output adc for x and y axis*/
-static int avg_counter = 0;                        /**< counter to compute the average for results_x and _y*/
+static volatile int g_cycles = 0;                  /**< Keeps track of the # of cycles for timer1 */
+static double avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors data output adc for x and y axis*/
+static int avg_counter = 0;                        /**< counter to compute the average for avg_adc_x and avg_adc_y*/
 static double sinSum = 0, cosSum = 0;
 static RTC_PCF8523      rtc;
 
-
+//! Log the measurments to the SD card
+/*!
+ The HX711 load cell amplifier will be connected to digital pins of arduino.
+ \param deg a pointer to a variable that calculated the average for degrees.
+*/
 static void logToSD(int* deg)
 {
     String str;
     float pressureKPA = 0, temperatureC = 0;
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
     DateTime now = rtc.now();
-    
-    /*get pressure and temp*/
+
+    //! get pressure and temperature from mpl115a2 sensor
+    /*!
+      \param pressureKPA a float passed by reference
+      \param temperatureC a float passed by reference
+    */
     mpl115a2.getPT(&pressureKPA,&temperatureC);
     
     if(dataFile){
@@ -82,7 +104,7 @@ static void logToSD(int* deg)
 
 void setup(void)
 {
-    const int chipSelect = 10;
+    const int chipSelect = 10; /**< pin 10 for the sd chipselect on the adafruit datalogging shield.*/
     
     /** Open serial communications and wait for port to open: */
     while (!Serial) {
@@ -108,9 +130,10 @@ void setup(void)
 
 
     Serial.print("\nInitializing SD card...");
-    
-    pinMode(chipSelect, OUTPUT); /* make sure that the default chip select pin is set to
-                                    output, even if you don't use it: */
+    /** make sure that the default chip select pin is set to
+     *  output, even if you don't use it:
+     */
+    pinMode(chipSelect, OUTPUT); 
    
     if (!SD.begin(chipSelect)) {
         Serial.println("initialization failed. Things to check:");
@@ -160,9 +183,14 @@ void setup(void)
     }
 }
 
+//! Timer1 hardware interrupt
+/*!
+ This interrupt function is called every second (1 hz).
+ Every six seconds calculate rpm and velocity for met1 speed sensor.
+*/
 ISR(TIMER1_OVF_vect)        
 {
-#define PERIOD_THRESHOLD 6 /** 6 second period*/
+#define PERIOD_THRESHOLD 6 /**< 6 second period*/
     TCNT1 = 49911;
     g_cycles++;
     
@@ -175,7 +203,10 @@ ISR(TIMER1_OVF_vect)
         g_cycles = 0;
     }
 }
-
+//! rising edge triggered interrupt
+/*!
+  Counts the number of pulses outputed by the Met1 speed sensor
+*/
 static void pin_irq_handler()
 {
     ++counter;
@@ -203,22 +234,28 @@ static void pin_irq_handler()
 //     while(1){}
 //}
 
-#define MAX_ADC_VAL ((1UL<<23) - 1)
+#define MAX_ADC_VAL ((1UL<<23) - 1)  /**< Maximum positive value for 24bit*/
 
 void loop(void)
 {   
     {
-        /*HX711 read() will hang the program if load cells aren't connected*/
+        //! Averaging for load cells
+        /*!
+          Get digital value from hx711 and scale.
+          Scale by Maximum ADC Value for 24 bit resolution.
+        */
         avg_adc_x    += (x_scale.read() / (double)MAX_ADC_VAL); 
         avg_adc_y    += (y_scale.read() / (double)MAX_ADC_VAL);
     }
 
     {
         float deg;
-        const int sensorPin = A3;    /** input value: wind sensor analog */
+        const int sensorPin = A3;    /**< input value: wind sensor analog */
         
-        /** read wind dir analog value and Map*/
-        /** map dir sensor val from analog 0 to 1013 -> 0 to 360 deg */
+        //! read wind dir analog value and Map*/
+        /*! map dir sensor val from analog 0 to 1013 -> 0 to 360 deg.
+            Get the sines and cosines for averaging degrees.
+        */
         deg = (analogRead(sensorPin) - 0.0f) / (1013.0f - 0.0f) * (360.0f - 0.0f);
         sinSum += sin(deg2rad(deg));
         cosSum += cos(deg2rad(deg));

@@ -1,0 +1,621 @@
+\hypertarget{windsensor_8ino}{}\section{windsensor.\+ino File Reference}
+\label{windsensor_8ino}\index{windsensor.\+ino@{windsensor.\+ino}}
+{\ttfamily \#include $<$Adafruit\+\_\+\+M\+P\+L115\+A2.\+h$>$}\newline
+{\ttfamily \#include $<$S\+P\+I.\+h$>$}\newline
+{\ttfamily \#include $<$S\+D.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}R\+T\+Clib.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}H\+X711.\+h\char`\"{}}\newline
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_a1536230053989f05113870b57c81b368}{D\+O\+U\+TA}}~4
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_a6a5dcd886a8a52cab810eb8a461c96f5}{C\+L\+KA}}~3
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_a3d0814fa8af472164fbf0843faa35d5c}{D\+O\+U\+TB}}~6
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_aeeac7c3e17c81d104245d857c7bd184f}{C\+L\+KB}}~5
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_adb3564163b909516cbda0c168dbba86a}{calibration\+\_\+factor}}~1.\+0f
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_a4b6027f22a7f9e0128f472f0526ce23d}{P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD}}~6
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_a894738198a00b6a55e87799c0f8712bb}{deg2rad}}(deg)~((deg $\ast$ 71.\+0) / 4068.\+0)
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_aa0a2b2d4d920457dad62bbe8e268850e}{rad2deg}}(rad)~((rad $\ast$ 4068.\+0) / 71.\+0)
+\item 
+\#define \mbox{\hyperlink{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}{M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL}}~((1\+U\+L$<$$<$23) -\/ 1)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static H\+X711 \mbox{\hyperlink{windsensor_8ino_a63487c630a07521a6eb55b8f607c193f}{x\+\_\+scale}} (\mbox{\hyperlink{windsensor_8ino_a1536230053989f05113870b57c81b368}{D\+O\+U\+TA}}, \mbox{\hyperlink{windsensor_8ino_a6a5dcd886a8a52cab810eb8a461c96f5}{C\+L\+KA}})
+\begin{DoxyCompactList}\small\item\em Using H\+X711 constructor. \end{DoxyCompactList}\item 
+static H\+X711 \mbox{\hyperlink{windsensor_8ino_aff383f74e82e01501521b84d1bc001e2}{y\+\_\+scale}} (\mbox{\hyperlink{windsensor_8ino_a3d0814fa8af472164fbf0843faa35d5c}{D\+O\+U\+TB}}, \mbox{\hyperlink{windsensor_8ino_aeeac7c3e17c81d104245d857c7bd184f}{C\+L\+KB}})
+\begin{DoxyCompactList}\small\item\em Using H\+X711 constructor. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{windsensor_8ino_a6125069fcf9a9e592937a7b143c4ce7a}{log\+To\+SD}} (int $\ast$deg)
+\begin{DoxyCompactList}\small\item\em Log the measurments to the SD card. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{windsensor_8ino_a7dfd9b79bc5a37d7df40207afbc5431f}{setup}} (void)
+\item 
+\mbox{\hyperlink{windsensor_8ino_ab16889ae984b9b798989a0d239283cac}{I\+SR}} (T\+I\+M\+E\+R1\+\_\+\+O\+V\+F\+\_\+vect)
+\begin{DoxyCompactList}\small\item\em Timer1 hardware interrupt. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{windsensor_8ino_a326020c34cf7bde02de2cafe8f9e62c1}{pin\+\_\+irq\+\_\+handler}} ()
+\begin{DoxyCompactList}\small\item\em rising edge triggered interrupt \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{windsensor_8ino_a0b33edabd7f1c4e4a0bf32c67269be2f}{loop}} (void)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static Adafruit\+\_\+\+M\+P\+L115\+A2 \mbox{\hyperlink{windsensor_8ino_ad968397c6ea6b9db90c2cab353353f5a}{mpl115a2}}
+\item 
+static volatile int \mbox{\hyperlink{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}{counter}}
+\item 
+static volatile long \mbox{\hyperlink{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}{rpm}}
+\item 
+static volatile bool \mbox{\hyperlink{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}{rw\+\_\+flag}}
+\item 
+static volatile float \mbox{\hyperlink{windsensor_8ino_aa4fd0d57d98c7d4f1072f2edd19ab2ed}{V}}
+\item 
+static volatile int \mbox{\hyperlink{windsensor_8ino_a04af5fae2fee3e96724c5a2d4cdba9ea}{g\+\_\+cycles}} = 0
+\item 
+static double \mbox{\hyperlink{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}{avg\+\_\+adc\+\_\+x}} = 0
+\item 
+static double \mbox{\hyperlink{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}{avg\+\_\+adc\+\_\+y}} = 0
+\item 
+static int \mbox{\hyperlink{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}{avg\+\_\+counter}} = 0
+\item 
+static double \mbox{\hyperlink{windsensor_8ino_af16089af53c1a813d5decdf37fd8382f}{sin\+Sum}} = 0
+\item 
+static double \mbox{\hyperlink{windsensor_8ino_ae99d45425d50ae8be8137abd39020329}{cos\+Sum}} = 0
+\item 
+static R\+T\+C\+\_\+\+P\+C\+F8523 \mbox{\hyperlink{windsensor_8ino_adab40bd3cc2c36728a2a34e813a75b88}{rtc}}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Inline load cell Project Author\+: Thomas Turner (\href{mailto:thomastdt@gmail.com}{\tt thomastdt@gmail.\+com}) Last Modified\+: 09-\/10-\/18 
+
+\subsection{Macro Definition Documentation}
+\mbox{\Hypertarget{windsensor_8ino_adb3564163b909516cbda0c168dbba86a}\label{windsensor_8ino_adb3564163b909516cbda0c168dbba86a}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!calibration\+\_\+factor@{calibration\+\_\+factor}}
+\index{calibration\+\_\+factor@{calibration\+\_\+factor}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{calibration\+\_\+factor}{calibration\_factor}}
+{\footnotesize\ttfamily \#define calibration\+\_\+factor~1.\+0f}
+
+Calibration factor for load cells using hx711 
+
+Definition at line 34 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a6a5dcd886a8a52cab810eb8a461c96f5}\label{windsensor_8ino_a6a5dcd886a8a52cab810eb8a461c96f5}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!C\+L\+KA@{C\+L\+KA}}
+\index{C\+L\+KA@{C\+L\+KA}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{C\+L\+KA}{CLKA}}
+{\footnotesize\ttfamily \#define C\+L\+KA~3}
+
+digital pin for Hx711\+: U\+S\+ED F\+OR L\+O\+AD C\+E\+LL ON X-\/\+A\+X\+IS 
+
+Definition at line 14 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_aeeac7c3e17c81d104245d857c7bd184f}\label{windsensor_8ino_aeeac7c3e17c81d104245d857c7bd184f}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!C\+L\+KB@{C\+L\+KB}}
+\index{C\+L\+KB@{C\+L\+KB}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{C\+L\+KB}{CLKB}}
+{\footnotesize\ttfamily \#define C\+L\+KB~5}
+
+digital pin for Hx711\+: U\+S\+ED F\+OR L\+O\+AD C\+E\+LL ON Y-\/\+A\+X\+IS 
+
+Definition at line 16 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a894738198a00b6a55e87799c0f8712bb}\label{windsensor_8ino_a894738198a00b6a55e87799c0f8712bb}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!deg2rad@{deg2rad}}
+\index{deg2rad@{deg2rad}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{deg2rad}{deg2rad}}
+{\footnotesize\ttfamily \#define deg2rad(\begin{DoxyParamCaption}\item[{}]{deg }\end{DoxyParamCaption})~((deg $\ast$ 71.\+0) / 4068.\+0)}
+
+
+
+Definition at line 214 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a1536230053989f05113870b57c81b368}\label{windsensor_8ino_a1536230053989f05113870b57c81b368}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!D\+O\+U\+TA@{D\+O\+U\+TA}}
+\index{D\+O\+U\+TA@{D\+O\+U\+TA}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{D\+O\+U\+TA}{DOUTA}}
+{\footnotesize\ttfamily \#define D\+O\+U\+TA~4}
+
+digital pin for Hx711\+: U\+S\+ED F\+OR L\+O\+AD C\+E\+LL ON X-\/\+A\+X\+IS 
+
+Definition at line 13 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a3d0814fa8af472164fbf0843faa35d5c}\label{windsensor_8ino_a3d0814fa8af472164fbf0843faa35d5c}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!D\+O\+U\+TB@{D\+O\+U\+TB}}
+\index{D\+O\+U\+TB@{D\+O\+U\+TB}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{D\+O\+U\+TB}{DOUTB}}
+{\footnotesize\ttfamily \#define D\+O\+U\+TB~6}
+
+digital pin for Hx711\+: U\+S\+ED F\+OR L\+O\+AD C\+E\+LL ON Y-\/\+A\+X\+IS 
+
+Definition at line 15 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}\label{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL@{M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL}}
+\index{M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL@{M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL}{MAX\_ADC\_VAL}}
+{\footnotesize\ttfamily \#define M\+A\+X\+\_\+\+A\+D\+C\+\_\+\+V\+AL~((1\+U\+L$<$$<$23) -\/ 1)}
+
+Maximum positive value for 24bit 
+
+Definition at line 236 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a4b6027f22a7f9e0128f472f0526ce23d}\label{windsensor_8ino_a4b6027f22a7f9e0128f472f0526ce23d}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD@{P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD}}
+\index{P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD@{P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD}{PERIOD\_THRESHOLD}}
+{\footnotesize\ttfamily \#define P\+E\+R\+I\+O\+D\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD~6}
+
+\mbox{\Hypertarget{windsensor_8ino_aa0a2b2d4d920457dad62bbe8e268850e}\label{windsensor_8ino_aa0a2b2d4d920457dad62bbe8e268850e}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!rad2deg@{rad2deg}}
+\index{rad2deg@{rad2deg}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{rad2deg}{rad2deg}}
+{\footnotesize\ttfamily \#define rad2deg(\begin{DoxyParamCaption}\item[{}]{rad }\end{DoxyParamCaption})~((rad $\ast$ 4068.\+0) / 71.\+0)}
+
+
+
+Definition at line 215 of file windsensor.\+ino.
+
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{windsensor_8ino_ab16889ae984b9b798989a0d239283cac}\label{windsensor_8ino_ab16889ae984b9b798989a0d239283cac}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!I\+SR@{I\+SR}}
+\index{I\+SR@{I\+SR}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{I\+S\+R()}{ISR()}}
+{\footnotesize\ttfamily I\+SR (\begin{DoxyParamCaption}\item[{T\+I\+M\+E\+R1\+\_\+\+O\+V\+F\+\_\+vect}]{ }\end{DoxyParamCaption})}
+
+
+
+Timer1 hardware interrupt. 
+
+This interrupt function is called every second (1 hz). Every six seconds calculate rpm and velocity for met1 speed sensor. 
+
+Definition at line 190 of file windsensor.\+ino.
+
+
+\begin{DoxyCode}
+191 \{
+192 \textcolor{preprocessor}{#define PERIOD\_THRESHOLD 6 }
+193 \textcolor{preprocessor}{    TCNT1 = 49911;}
+194     \mbox{\hyperlink{windsensor_8ino_a04af5fae2fee3e96724c5a2d4cdba9ea}{g\_cycles}}++;
+195     
+196     \textcolor{keywordflow}{if}(\mbox{\hyperlink{windsensor_8ino_a4b6027f22a7f9e0128f472f0526ce23d}{PERIOD\_THRESHOLD}} == \mbox{\hyperlink{windsensor_8ino_a04af5fae2fee3e96724c5a2d4cdba9ea}{g\_cycles}})\{
+197         \mbox{\hyperlink{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}{rpm}}     = \mbox{\hyperlink{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}{counter}} * 15L;
+198         \mbox{\hyperlink{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}{rpm}}    /= 40L;
+199         \mbox{\hyperlink{windsensor_8ino_aa4fd0d57d98c7d4f1072f2edd19ab2ed}{V}}       = (\mbox{\hyperlink{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}{rpm}} / 16.767f) + 0.6f;
+200         \mbox{\hyperlink{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}{rw\_flag}} = 1;
+201         \mbox{\hyperlink{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}{counter}} = 0;
+202         \mbox{\hyperlink{windsensor_8ino_a04af5fae2fee3e96724c5a2d4cdba9ea}{g\_cycles}} = 0;
+203     \}
+204 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{windsensor_8ino_a6125069fcf9a9e592937a7b143c4ce7a}\label{windsensor_8ino_a6125069fcf9a9e592937a7b143c4ce7a}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!log\+To\+SD@{log\+To\+SD}}
+\index{log\+To\+SD@{log\+To\+SD}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{log\+To\+S\+D()}{logToSD()}}
+{\footnotesize\ttfamily static void log\+To\+SD (\begin{DoxyParamCaption}\item[{int $\ast$}]{deg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Log the measurments to the SD card. 
+
+The H\+X711 load cell amplifier will be connected to digital pins of arduino. 
+\begin{DoxyParams}{Parameters}
+{\em deg} & a pointer to a variable that calculated the average for degrees. \\
+\hline
+\end{DoxyParams}
+get pressure and temperature from mpl115a2 sensor
+
+
+\begin{DoxyParams}{Parameters}
+{\em pressure\+K\+PA} & a float passed by reference\\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 53 of file windsensor.\+ino.
+
+
+\begin{DoxyCode}
+54 \{
+55     String str;
+56     \textcolor{keywordtype}{float} pressureKPA = 0, temperatureC = 0;
+57     File dataFile = SD.open(\textcolor{stringliteral}{"datalog.txt"}, FILE\_WRITE);
+58     DateTime now = \mbox{\hyperlink{windsensor_8ino_adab40bd3cc2c36728a2a34e813a75b88}{rtc}}.now();
+59 
+61 
+64     \mbox{\hyperlink{windsensor_8ino_ad968397c6ea6b9db90c2cab353353f5a}{mpl115a2}}.getPT(&pressureKPA,&temperatureC);
+65     
+66     \textcolor{keywordflow}{if}(dataFile)\{
+67         str = \textcolor{stringliteral}{""};
+68         str += String(now.year(), DEC);
+69         str += \textcolor{charliteral}{'/'};
+70         str += String(now.month(), DEC);
+71         str += \textcolor{charliteral}{'/'};
+72         str += String(now.day(), DEC);
+73         str += \textcolor{stringliteral}{" "};
+74         str += String(now.hour(), DEC);
+75         str += \textcolor{charliteral}{':'};
+76         str += String(now.minute(), DEC);
+77         str += \textcolor{charliteral}{':'};
+78         str += String(now.second(), DEC);  
+79         str += \textcolor{stringliteral}{", "};
+80         str += String(\mbox{\hyperlink{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}{avg\_adc\_x}}, 4);
+81         str += \textcolor{stringliteral}{", "};
+82         str += String(\mbox{\hyperlink{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}{avg\_adc\_y}}, 4);
+83         str += \textcolor{stringliteral}{", "};
+84         str += String(*deg);
+85         str += \textcolor{stringliteral}{", "};
+86         str += String(\mbox{\hyperlink{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}{rpm}});
+87         str += \textcolor{stringliteral}{", "};
+88         str += String(\mbox{\hyperlink{windsensor_8ino_aa4fd0d57d98c7d4f1072f2edd19ab2ed}{V}});
+89         str += \textcolor{stringliteral}{", "};
+90         str += String(pressureKPA, 4);
+91         str += \textcolor{stringliteral}{", "};
+92         str += String(temperatureC, 1);
+93 
+94         dataFile.println(str);                                             
+95         dataFile.close();
+96     \} \textcolor{keywordflow}{else}\{
+97         Serial.println(\textcolor{stringliteral}{"Failed to open or create datalog.txt"});       
+98     \}
+99 
+100      Serial.println(str);
+101 
+102 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{windsensor_8ino_a0b33edabd7f1c4e4a0bf32c67269be2f}\label{windsensor_8ino_a0b33edabd7f1c4e4a0bf32c67269be2f}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!loop@{loop}}
+\index{loop@{loop}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{loop()}{loop()}}
+{\footnotesize\ttfamily void loop (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Averaging for load cells
+
+Get digital value from hx711 and scale. Scale by Maximum A\+DC Value for 24 bit resolution.
+
+$<$ input value\+: wind sensor analog ~\newline
+~\newline
+~\newline
+~\newline
+~\newline
+~\newline
+ read wind dir analog value and Map$\ast$/
+
+map dir sensor val from analog 0 to 1013 -\/$>$ 0 to 360 deg. Get the sines and cosines for averaging degrees.
+
+compute average deg
+
+get the average adc results ~\newline
+~\newline
+ unscale avg\+\_\+adc
+
+initialize variables for averageing 
+
+Definition at line 238 of file windsensor.\+ino.
+
+
+\begin{DoxyCode}
+239 \{   
+240     \{
+242 
+246         \mbox{\hyperlink{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}{avg\_adc\_x}}    += (\mbox{\hyperlink{windsensor_8ino_a63487c630a07521a6eb55b8f607c193f}{x\_scale}}.read() / (double)\mbox{\hyperlink{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}{MAX\_ADC\_VAL}}); 
+247         \mbox{\hyperlink{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}{avg\_adc\_y}}    += (\mbox{\hyperlink{windsensor_8ino_aff383f74e82e01501521b84d1bc001e2}{y\_scale}}.read() / (double)\mbox{\hyperlink{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}{MAX\_ADC\_VAL}});
+248     \}
+249 
+250     \{
+251         \textcolor{keywordtype}{float} deg;
+252         \textcolor{keyword}{const} \textcolor{keywordtype}{int} sensorPin = A3;    
+254 
+258         deg = (analogRead(sensorPin) - 0.0f) / (1013.0f - 0.0f) * (360.0f - 0.0f);
+259         \mbox{\hyperlink{windsensor_8ino_af16089af53c1a813d5decdf37fd8382f}{sinSum}} += sin(\mbox{\hyperlink{windsensor_8ino_a894738198a00b6a55e87799c0f8712bb}{deg2rad}}(deg));
+260         \mbox{\hyperlink{windsensor_8ino_ae99d45425d50ae8be8137abd39020329}{cosSum}} += cos(\mbox{\hyperlink{windsensor_8ino_a894738198a00b6a55e87799c0f8712bb}{deg2rad}}(deg));
+261         ++\mbox{\hyperlink{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}{avg\_counter}};
+262     \}
+263     
+264     \textcolor{keywordflow}{if}(\mbox{\hyperlink{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}{rw\_flag}})\{
+265         \textcolor{keywordtype}{int} deg;
+266         \mbox{\hyperlink{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}{rw\_flag}} = !\mbox{\hyperlink{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}{rw\_flag}};
+267 
+269         deg = (int)(\mbox{\hyperlink{windsensor_8ino_aa0a2b2d4d920457dad62bbe8e268850e}{rad2deg}}(atan2(\mbox{\hyperlink{windsensor_8ino_af16089af53c1a813d5decdf37fd8382f}{sinSum}}, \mbox{\hyperlink{windsensor_8ino_ae99d45425d50ae8be8137abd39020329}{cosSum}})) + 360.0) % 360;
+271         \mbox{\hyperlink{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}{avg\_adc\_x}} /= \mbox{\hyperlink{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}{avg\_counter}};
+272         \mbox{\hyperlink{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}{avg\_adc\_y}} /= \mbox{\hyperlink{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}{avg\_counter}};
+273 
+275         \mbox{\hyperlink{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}{avg\_adc\_x}} *= \mbox{\hyperlink{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}{MAX\_ADC\_VAL}};
+276         \mbox{\hyperlink{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}{avg\_adc\_y}} *= \mbox{\hyperlink{windsensor_8ino_a4de85d5ed3adfe2aa94a81e7b4cf8829}{MAX\_ADC\_VAL}};
+277         
+278         \mbox{\hyperlink{windsensor_8ino_a6125069fcf9a9e592937a7b143c4ce7a}{logToSD}}(&deg);
+280         \mbox{\hyperlink{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}{avg\_adc\_x}} = 0;
+281         \mbox{\hyperlink{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}{avg\_adc\_y}} = 0;
+282         \mbox{\hyperlink{windsensor_8ino_ae99d45425d50ae8be8137abd39020329}{cosSum}} = 0;
+283         \mbox{\hyperlink{windsensor_8ino_af16089af53c1a813d5decdf37fd8382f}{sinSum}} = 0;
+284         \mbox{\hyperlink{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}{avg\_counter}} = 0;
+285         
+286     \}
+287     
+288 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{windsensor_8ino_a326020c34cf7bde02de2cafe8f9e62c1}\label{windsensor_8ino_a326020c34cf7bde02de2cafe8f9e62c1}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!pin\+\_\+irq\+\_\+handler@{pin\+\_\+irq\+\_\+handler}}
+\index{pin\+\_\+irq\+\_\+handler@{pin\+\_\+irq\+\_\+handler}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{pin\+\_\+irq\+\_\+handler()}{pin\_irq\_handler()}}
+{\footnotesize\ttfamily static void pin\+\_\+irq\+\_\+handler (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+rising edge triggered interrupt 
+
+Counts the number of pulses outputed by the Met1 speed sensor 
+
+Definition at line 209 of file windsensor.\+ino.
+
+
+\begin{DoxyCode}
+210 \{
+211     ++\mbox{\hyperlink{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}{counter}};
+212 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{windsensor_8ino_a7dfd9b79bc5a37d7df40207afbc5431f}\label{windsensor_8ino_a7dfd9b79bc5a37d7df40207afbc5431f}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!setup@{setup}}
+\index{setup@{setup}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{setup()}{setup()}}
+{\footnotesize\ttfamily void setup (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+$<$ pin 10 for the sd chipselect on the adafruit datalogging shield.
+
+Open serial communications and wait for port to open\+: ~\newline
+~\newline
+~\newline
+~\newline
+~\newline
+ $<$ wait for serial port to connect. Needed for native U\+SB port only ~\newline
+~\newline
+~\newline
+~\newline
+ make sure that the default chip select pin is set to output, even if you don\textquotesingle{}t use it\+:
+
+initialize timer1 -\/ 16 bit (65536) ~\newline
+~\newline
+ initialize timer0 -\/ rising edge triggered interrupt -\/ pin 2 ~\newline
+ initialize variables for interrupts 
+
+Definition at line 104 of file windsensor.\+ino.
+
+
+\begin{DoxyCode}
+105 \{
+106     \textcolor{keyword}{const} \textcolor{keywordtype}{int} chipSelect = 10; 
+109     \textcolor{keywordflow}{while} (!Serial) \{
+110         ; 
+111     \}
+112     Serial.begin(9600);
+113     Serial.println(\textcolor{stringliteral}{"testing!"});
+114     \mbox{\hyperlink{windsensor_8ino_ad968397c6ea6b9db90c2cab353353f5a}{mpl115a2}}.begin(); \textcolor{comment}{//for pressure and temp sensor}
+115     
+116     \textcolor{keywordflow}{if} (! \mbox{\hyperlink{windsensor_8ino_adab40bd3cc2c36728a2a34e813a75b88}{rtc}}.begin()) \{
+117         Serial.println(\textcolor{stringliteral}{"Couldn't find RTC"});
+118         \textcolor{keywordflow}{while} (1);
+119     \}
+120     \textcolor{keywordflow}{if} (! \mbox{\hyperlink{windsensor_8ino_adab40bd3cc2c36728a2a34e813a75b88}{rtc}}.initialized()) \{
+121         Serial.println(\textcolor{stringliteral}{"RTC is NOT running!"});
+122         \textcolor{comment}{// following line sets the RTC to the date & time this sketch was compiled}
+123         \textcolor{comment}{//rtc.adjust(DateTime(F(\_\_DATE\_\_), F(\_\_TIME\_\_)));}
+124         \textcolor{comment}{// This line sets the RTC with an explicit date & time, for example to set}
+125         \textcolor{comment}{// January 21, 2014 at 3am you would call:}
+126         \textcolor{comment}{// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));}
+127     \}
+128     \textcolor{comment}{//rtc.adjust(DateTime(F(\_\_DATE\_\_), F(\_\_TIME\_\_)));}
+129 
+130 
+131     Serial.print(\textcolor{stringliteral}{"\(\backslash\)nInitializing SD card..."});
+135     pinMode(chipSelect, OUTPUT); 
+136    
+137     \textcolor{keywordflow}{if} (!SD.begin(chipSelect)) \{
+138         Serial.println(\textcolor{stringliteral}{"initialization failed. Things to check:"});
+139         Serial.println(\textcolor{stringliteral}{"* is a card inserted?"});
+140         Serial.println(\textcolor{stringliteral}{"* is your wiring correct?"});
+141         Serial.println(\textcolor{stringliteral}{"* did you change the chipSelect pin to match your shield or module?"});
+142     \} \textcolor{keywordflow}{else} \{
+143         Serial.println(\textcolor{stringliteral}{"Wiring is correct and a card is present."});
+144     \}
+145 
+146     \mbox{\hyperlink{windsensor_8ino_a63487c630a07521a6eb55b8f607c193f}{x\_scale}}.set\_scale(\mbox{\hyperlink{windsensor_8ino_adb3564163b909516cbda0c168dbba86a}{calibration\_factor}});
+147     \mbox{\hyperlink{windsensor_8ino_aff383f74e82e01501521b84d1bc001e2}{y\_scale}}.set\_scale(\mbox{\hyperlink{windsensor_8ino_adb3564163b909516cbda0c168dbba86a}{calibration\_factor}});
+148 
+149     
+151     noInterrupts();           \textcolor{comment}{// disable all interrupts}
+152     TCCR1A  = 0;
+153     TCCR1B  = 0;
+154     
+155     TCNT1   = 49911;            \textcolor{comment}{// preload timer 16MHz/1024 => Period=4sec}
+156     TCCR1B |= ((1 << CS12)| (1 << CS10)) ;    \textcolor{comment}{// 1024 prescaler }
+157     TIMSK1 |= (1 << TOIE1);   \textcolor{comment}{// enable timer overflow interrupt}
+158     interrupts();             \textcolor{comment}{// enable all interrupts}
+159 
+161     \{
+162         \textcolor{keyword}{const} byte interruptPin = 2;
+163         attachInterrupt(digitalPinToInterrupt(interruptPin), \mbox{\hyperlink{windsensor_8ino_a326020c34cf7bde02de2cafe8f9e62c1}{pin\_irq\_handler}}, RISING );
+164     \}
+166     \mbox{\hyperlink{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}{counter}} = 0;
+167     \mbox{\hyperlink{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}{rpm}}     = 0;
+168     \mbox{\hyperlink{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}{rw\_flag}} = 0;
+169     \mbox{\hyperlink{windsensor_8ino_aa4fd0d57d98c7d4f1072f2edd19ab2ed}{V}}       = 0.0f;
+170 
+171     \{
+172         File dataFile = SD.open(\textcolor{stringliteral}{"datalog.txt"}, FILE\_WRITE);
+173         \textcolor{keywordflow}{if}(dataFile)\{
+174             dataFile.println(\textcolor{stringliteral}{"time, x\_kg, y\_kg, dir, rpm, Vel, kPa, celsius"});
+175             dataFile.close();
+176             
+177         \} \textcolor{keywordflow}{else}\{
+178             Serial.println(\textcolor{stringliteral}{"Error creating or opening datalog.txt!"});
+179         \}
+180         Serial.println(\textcolor{stringliteral}{"time, x\_kg, y\_kg,  dir, rpm, Vel, kPa, celsius"});
+181         
+182     \}
+183 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{windsensor_8ino_a63487c630a07521a6eb55b8f607c193f}\label{windsensor_8ino_a63487c630a07521a6eb55b8f607c193f}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!x\+\_\+scale@{x\+\_\+scale}}
+\index{x\+\_\+scale@{x\+\_\+scale}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{x\+\_\+scale()}{x\_scale()}}
+{\footnotesize\ttfamily static H\+X711 x\+\_\+scale (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{windsensor_8ino_a1536230053989f05113870b57c81b368}{D\+O\+U\+TA}}}]{,  }\item[{\mbox{\hyperlink{windsensor_8ino_a6a5dcd886a8a52cab810eb8a461c96f5}{C\+L\+KA}}}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Using H\+X711 constructor. 
+
+The H\+X711 load cell amplifier will be connected to digital pins of arduino. 
+\begin{DoxyParams}{Parameters}
+{\em D\+O\+U\+TA} & the pin number to arduino digital \\
+\hline
+{\em C\+L\+KA} & the pin number to arduino digital \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{windsensor_8ino_aff383f74e82e01501521b84d1bc001e2}\label{windsensor_8ino_aff383f74e82e01501521b84d1bc001e2}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!y\+\_\+scale@{y\+\_\+scale}}
+\index{y\+\_\+scale@{y\+\_\+scale}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{y\+\_\+scale()}{y\_scale()}}
+{\footnotesize\ttfamily static H\+X711 y\+\_\+scale (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{windsensor_8ino_a3d0814fa8af472164fbf0843faa35d5c}{D\+O\+U\+TB}}}]{,  }\item[{\mbox{\hyperlink{windsensor_8ino_aeeac7c3e17c81d104245d857c7bd184f}{C\+L\+KB}}}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Using H\+X711 constructor. 
+
+The H\+X711 load cell amplifier will be connected to digital pins of arduino. 
+\begin{DoxyParams}{Parameters}
+{\em D\+O\+U\+TA} & the pin number to arduino digital \\
+\hline
+{\em C\+L\+KA} & the pin number to arduino digital \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}\label{windsensor_8ino_a4e68dc721cdeec90403f8d51073a0ff7}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!avg\+\_\+adc\+\_\+x@{avg\+\_\+adc\+\_\+x}}
+\index{avg\+\_\+adc\+\_\+x@{avg\+\_\+adc\+\_\+x}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{avg\+\_\+adc\+\_\+x}{avg\_adc\_x}}
+{\footnotesize\ttfamily double avg\+\_\+adc\+\_\+x = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 43 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}\label{windsensor_8ino_a9721778a8fa458f3ae824eceb7d8f703}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!avg\+\_\+adc\+\_\+y@{avg\+\_\+adc\+\_\+y}}
+\index{avg\+\_\+adc\+\_\+y@{avg\+\_\+adc\+\_\+y}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{avg\+\_\+adc\+\_\+y}{avg\_adc\_y}}
+{\footnotesize\ttfamily double avg\+\_\+adc\+\_\+y = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+load sensors data output adc for x and y axis 
+
+Definition at line 43 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}\label{windsensor_8ino_a7f1aa577037cdb41a6226fd5f24143be}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!avg\+\_\+counter@{avg\+\_\+counter}}
+\index{avg\+\_\+counter@{avg\+\_\+counter}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{avg\+\_\+counter}{avg\_counter}}
+{\footnotesize\ttfamily int avg\+\_\+counter = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+counter to compute the average for avg\+\_\+adc\+\_\+x and avg\+\_\+adc\+\_\+y 
+
+Definition at line 44 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_ae99d45425d50ae8be8137abd39020329}\label{windsensor_8ino_ae99d45425d50ae8be8137abd39020329}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!cos\+Sum@{cos\+Sum}}
+\index{cos\+Sum@{cos\+Sum}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{cos\+Sum}{cosSum}}
+{\footnotesize\ttfamily double cos\+Sum = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 45 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}\label{windsensor_8ino_a3d4f497af9a194d9e03e5d9a9b0ee67d}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!counter@{counter}}
+\index{counter@{counter}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{counter}{counter}}
+{\footnotesize\ttfamily volatile int counter\hspace{0.3cm}{\ttfamily [static]}}
+
+counter for the \# of digital pulses that are outputed by the Met1 speed sensor 
+
+Definition at line 38 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a04af5fae2fee3e96724c5a2d4cdba9ea}\label{windsensor_8ino_a04af5fae2fee3e96724c5a2d4cdba9ea}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!g\+\_\+cycles@{g\+\_\+cycles}}
+\index{g\+\_\+cycles@{g\+\_\+cycles}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{g\+\_\+cycles}{g\_cycles}}
+{\footnotesize\ttfamily volatile int g\+\_\+cycles = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+Keeps track of the \# of cycles for timer1 
+
+Definition at line 42 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_ad968397c6ea6b9db90c2cab353353f5a}\label{windsensor_8ino_ad968397c6ea6b9db90c2cab353353f5a}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!mpl115a2@{mpl115a2}}
+\index{mpl115a2@{mpl115a2}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{mpl115a2}{mpl115a2}}
+{\footnotesize\ttfamily Adafruit\+\_\+\+M\+P\+L115\+A2 mpl115a2\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 36 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}\label{windsensor_8ino_a1571ae0d208fed39e6690affb377db08}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!rpm@{rpm}}
+\index{rpm@{rpm}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{rpm}{rpm}}
+{\footnotesize\ttfamily volatile long rpm\hspace{0.3cm}{\ttfamily [static]}}
+
+revs per min 
+
+Definition at line 39 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_adab40bd3cc2c36728a2a34e813a75b88}\label{windsensor_8ino_adab40bd3cc2c36728a2a34e813a75b88}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!rtc@{rtc}}
+\index{rtc@{rtc}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{rtc}{rtc}}
+{\footnotesize\ttfamily R\+T\+C\+\_\+\+P\+C\+F8523 rtc\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 46 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}\label{windsensor_8ino_a2ff89ca4ee93f613d9003947a163355b}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!rw\+\_\+flag@{rw\+\_\+flag}}
+\index{rw\+\_\+flag@{rw\+\_\+flag}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{rw\+\_\+flag}{rw\_flag}}
+{\footnotesize\ttfamily volatile bool rw\+\_\+flag\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 40 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_af16089af53c1a813d5decdf37fd8382f}\label{windsensor_8ino_af16089af53c1a813d5decdf37fd8382f}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!sin\+Sum@{sin\+Sum}}
+\index{sin\+Sum@{sin\+Sum}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{sin\+Sum}{sinSum}}
+{\footnotesize\ttfamily double sin\+Sum = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 45 of file windsensor.\+ino.
+
+\mbox{\Hypertarget{windsensor_8ino_aa4fd0d57d98c7d4f1072f2edd19ab2ed}\label{windsensor_8ino_aa4fd0d57d98c7d4f1072f2edd19ab2ed}} 
+\index{windsensor.\+ino@{windsensor.\+ino}!V@{V}}
+\index{V@{V}!windsensor.\+ino@{windsensor.\+ino}}
+\subsubsection{\texorpdfstring{V}{V}}
+{\footnotesize\ttfamily volatile float V\hspace{0.3cm}{\ttfamily [static]}}
+
+Velocity \mbox{[}miles per hour\mbox{]} 
+
+Definition at line 41 of file windsensor.\+ino.
+
