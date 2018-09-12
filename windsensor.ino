@@ -2,7 +2,7 @@
  * @file windsensor.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 09-10-18
+ *Last Modified: 09-12-18
  */
 
 #include <Adafruit_MPL115A2.h>
@@ -21,7 +21,7 @@
  \param DOUTA the pin number to arduino digital
  \param CLKA the pin number to arduino digital
 */
-static HX711 x_scale(DOUTA, CLKA);
+HX711 x_scale(DOUTA, CLKA);
 
 //! Using HX711 constructor
 /*!
@@ -29,11 +29,11 @@ static HX711 x_scale(DOUTA, CLKA);
  \param DOUTA the pin number to arduino digital
  \param CLKA the pin number to arduino digital
 */
-static HX711 y_scale(DOUTB, CLKB);
+HX711 y_scale(DOUTB, CLKB);
 
 #define calibration_factor  1.0f                   /*!< Calibration factor for load cells using hx711 */
 
-static Adafruit_MPL115A2 mpl115a2;                 
+Adafruit_MPL115A2 mpl115a2;                 
 
 static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
 static volatile long rpm;                          /**< revs per min */
@@ -43,7 +43,7 @@ static volatile int g_cycles = 0;                  /**< Keeps track of the # of 
 static double avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors data output adc for x and y axis*/
 static int avg_counter = 0;                        /**< counter to compute the average for avg_adc_x and avg_adc_y*/
 static double sinSum = 0, cosSum = 0;
-static RTC_PCF8523      rtc;
+RTC_PCF8523      rtc;
 
 //! Log the measurments to the SD card
 /*!
