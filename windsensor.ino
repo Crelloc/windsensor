@@ -2,7 +2,7 @@
  * @file windsensor.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 09-12-18
+ *Last Modified: 10-09-18
  */
 
 #include <Adafruit_MPL115A2.h>
@@ -161,6 +161,7 @@ void setup(void)
 /** initialize timer0 - rising edge triggered interrupt - pin 2 */
     {
         const byte interruptPin = 2;
+        pinMode(interruptPin, INPUT);
         attachInterrupt(digitalPinToInterrupt(interruptPin), pin_irq_handler, RISING );
     }
     /** initialize variables for interrupts */
