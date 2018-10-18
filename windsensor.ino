@@ -63,35 +63,35 @@ static void logToSD(int* deg)
       \param temperatureC a float passed by reference
     */
     mpl115a2.getPT(&pressureKPA,&temperatureC);
+   
+    str = "";
+    str += String(now.year(), DEC);
+    str += '/';
+    str += String(now.month(), DEC);
+    str += '/';
+    str += String(now.day(), DEC);
+    str += " ";
+    str += String(now.hour(), DEC);
+    str += ':';
+    str += String(now.minute(), DEC);
+    str += ':';
+    str += String(now.second(), DEC);  
+    str += ", ";
+    str += String(avg_adc_x, 4);
+    str += ", ";
+    str += String(avg_adc_y, 4);
+    str += ", ";
+    str += String(*deg);
+    str += ", ";
+    str += String(rpm);
+    str += ", ";
+    str += String(V);
+    str += ", ";
+    str += String(pressureKPA, 4);
+    str += ", ";
+    str += String(temperatureC, 1);
     
     if(dataFile){
-        str = "";
-        str += String(now.year(), DEC);
-        str += '/';
-        str += String(now.month(), DEC);
-        str += '/';
-        str += String(now.day(), DEC);
-        str += " ";
-        str += String(now.hour(), DEC);
-        str += ':';
-        str += String(now.minute(), DEC);
-        str += ':';
-        str += String(now.second(), DEC);  
-        str += ", ";
-        str += String(avg_adc_x, 4);
-        str += ", ";
-        str += String(avg_adc_y, 4);
-        str += ", ";
-        str += String(*deg);
-        str += ", ";
-        str += String(rpm);
-        str += ", ";
-        str += String(V);
-        str += ", ";
-        str += String(pressureKPA, 4);
-        str += ", ";
-        str += String(temperatureC, 1);
-
         dataFile.println(str);                                             
         dataFile.close();
     } else{
