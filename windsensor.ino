@@ -2,7 +2,7 @@
  * @file windsensor.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 10-09-18
+ *Last Modified: 10-18-18
  */
 
 #include <Adafruit_MPL115A2.h>
