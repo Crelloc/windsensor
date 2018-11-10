@@ -2,7 +2,7 @@
  * @file windsensor.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 10-18-18
+ *Last Modified: 11-09-18
  */
 
 #include <Adafruit_MPL115A2.h>
@@ -146,6 +146,8 @@ void setup(void)
 
     x_scale.set_scale(calibration_factor);
     y_scale.set_scale(calibration_factor);
+    x_scale.set_gain(64);
+    y_scale.set_gain(64);
 
     
 /** initialize timer1 - 16 bit (65536) */
