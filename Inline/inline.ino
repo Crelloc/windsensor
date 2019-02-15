@@ -2,7 +2,7 @@
  * @file inline.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 02-13-19
+ *Last Modified: 02-14-19
  *
  *
  */
@@ -94,7 +94,7 @@ static uint8_t get_string() //read the xbee buffer, return a flag if it's time t
 
 static Met1 GetMet1Measurements(){
     Met1 sys;
-    
+
     GET_VALUE_FROM_XBEE(&sys.deg);
     GET_VALUE_FROM_XBEE(&sys.rpm);
 
@@ -247,8 +247,8 @@ void setup(void)
     TCCR1A  = 0;
     TCCR1B  = 0;
     
-    TCNT1   = 49911;            // preload timer 16MHz/1024 => Period=4sec
-    TCCR1B |= ((1 << CS12)| (1 << CS10)) ;    // 1024 prescaler 
+    TCNT1   = 49911;            // preload timer; initialize counter
+    TCCR1B |= ((1 << CS12)| (1 << CS10)) ;    // 1024 prescaler: 16MHz/1024 - 1
     TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
     interrupts();             // enable all interrupts
 
