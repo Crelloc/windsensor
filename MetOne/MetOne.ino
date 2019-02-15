@@ -5,7 +5,7 @@ static volatile int counter;                       /**< counter for the # of dig
 static volatile long rpm;                          /**< revs per min */
 static volatile bool rw_flag;
 static volatile float V;                           /**< Velocity [miles per hour] */
-static volatile int g_cycles = 0;                  /**< Keeps track of the # of cycles for timer1 */
+//static volatile int g_cycles = 0;                  /**< Keeps track of the # of cycles for timer1 */
 static double sinSum = 0, cosSum = 0;
 static int avg_counter = 0;                        /**< counter to compute the average for avg_adc_x and avg_adc_y*/
 
@@ -21,23 +21,16 @@ static void Broadcast(int* deg, volatile long* rpm){
 
 //! Timer1 hardware interrupt
 /*!
- This interrupt function is called every second (1 hz).
- Every six seconds calculate rpm and velocity for met1 speed sensor.
+ This interrupt function is called every quarter second (0.25 hz).
+ Every 0.25 seconds calculate rpm and velocity for met1 speed sensor.
 */
 ISR(TIMER1_OVF_vect)        
 {
-#define PERIOD_THRESHOLD 6 /**< 6 second period*/
-    TCNT1 = 49911;
-    g_cycles++;
-    
-    if(PERIOD_THRESHOLD == g_cycles){
-        rpm     = counter * 15L;
-        rpm    /= 40L;
-        V       = (rpm / 16.767f) + 0.6f;
-        rw_flag = 1;
-        counter = 0;
-        g_cycles = 0;
-    }
+    rpm     = counter * 15L;
+    rpm    /= 40L;
+    V       = (rpm / 16.767f) + 0.6f;
+    rw_flag = 1;
+    counter = 0;
 }
 //! rising edge triggered interrupt
 /*!
@@ -57,15 +50,19 @@ void setup() {
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
     Serial.begin(9600);
-    /** initialize timer1 - 16 bit (65536) */
-    noInterrupts();           // disable all interrupts
+    /** initialize timer1 - 16 bit (65536)
+    * set timer1 to interrupt at 4Hz or 0.25 sec
+    */
+    cli();                                    //stop interrupts
     TCCR1A  = 0;
     TCCR1B  = 0;
-    
-    TCNT1   = 49911;            // preload timer
+    TCNT1   = 0;                              // initialize counter value to 0
+    // set compare match register for 4hz increments
+    OCR1A   = 3905;                          // (16*10^6) / (4*1024) - 1 [must be <65536]
+    TCCR1B |= (1 << WGM12);                   // turn on CTC mode
     TCCR1B |= ((1 << CS12)| (1 << CS10)) ;    // 1024 prescaler 
-    TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
-    interrupts();             // enable all interrupts
+    TIMSK1 |= (1 << OCIE1A);                  // enable timer compare interrupt
+    sei();                                    //allow interrupts
 
 /** initialize timer0 - rising edge triggered interrupt - pin 2 */
     {
