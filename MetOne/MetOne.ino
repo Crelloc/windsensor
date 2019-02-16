@@ -4,8 +4,6 @@
 static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
 static volatile long rpm;                          /**< revs per min */
 static volatile bool rw_flag;
-static volatile float V;                           /**< Velocity [miles per hour] */
-//static volatile int g_cycles = 0;                  /**< Keeps track of the # of cycles for timer1 */
 static double sinSum = 0, cosSum = 0;
 static int avg_counter = 0;                        /**< counter to compute the average for avg_adc_x and avg_adc_y*/
 
@@ -22,13 +20,12 @@ static void Broadcast(int* deg, volatile long* rpm){
 //! Timer1 hardware interrupt
 /*!
  This interrupt function is called every quarter second (0.25 hz).
- Every 0.25 seconds calculate rpm and velocity for met1 speed sensor.
+ Every 0.25 seconds calculate rpm for met1 speed sensor.
 */
 ISR(TIMER1_OVF_vect)        
 {
     rpm     = counter * 15L;
     rpm    /= 40L;
-    V       = (rpm / 16.767f) + 0.6f;
     rw_flag = 1;
     counter = 0;
 }
@@ -74,7 +71,6 @@ void setup() {
     counter = 0;
     rpm     = 0;
     rw_flag = 0;
-    V       = 0.0f;
 }
 
 void loop() {
