@@ -43,14 +43,11 @@ Adafruit_MPL115A2 mpl115a2;
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
 SoftwareSerial XBee(10, 11); // RX, TX
 
-static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
-static volatile long rpm;                          /**< revs per min */
+
 static volatile bool rw_flag;
-static volatile float V;                           /**< Velocity [miles per hour] */
 static volatile int g_cycles = 0;                  /**< Keeps track of the # of cycles for timer1 */
 static double avg_adc_x = 0, avg_adc_y = 0;         /**< load sensors data output adc for x and y axis*/
 static int avg_counter = 0;                        /**< counter to compute the average for avg_adc_x and avg_adc_y*/
-static double sinSum = 0, cosSum = 0;
 static uint8_t g_Index;
 static char g_Buffer[BUF_SIZE];
 RTC_PCF8523      rtc;
@@ -125,6 +122,7 @@ static void logToSD()
     char x_adc[16];
     char y_adc[16];
     char vel[16];
+    float V;
     float pressureKPA        = 0;
     float temperatureC       = 0;
     DateTime now             = rtc.now();
@@ -143,6 +141,7 @@ static void logToSD()
     */
     mpl115a2.getPT(&pressureKPA,&temperatureC);
     sys = GetMet1Measurements();
+    V   = (sys.rpm / 16.767f) + 0.6f;
     sprintf_f(avg_adc_x, x_adc);
     sprintf_f(avg_adc_y, y_adc);
     sprintf_f(V, vel);
@@ -279,11 +278,7 @@ ISR(TIMER1_OVF_vect)
     g_cycles++;
     
     if(PERIOD_THRESHOLD == g_cycles){
-        rpm     = counter * 15L;
-        rpm    /= 40L;
-        V       = (rpm / 16.767f) + 0.6f;
         rw_flag = 1;
-        counter = 0;
         g_cycles = 0;
     }
 }
