@@ -61,9 +61,10 @@ void setup() {
     TIMSK1 |= (1 << OCIE1A);                  // enable timer compare interrupt
     sei();                                    //allow interrupts
 
-/** initialize timer0 - rising edge triggered interrupt - pin 2 */
+/** initialize timer0 - rising edge triggered interrupt - pin 20 */
     {
-        const byte interruptPin = 2;
+        const byte interruptPin = 20;  //digital pins for interrupts: 2, 3, 18, 19, 20, 21
+                                       //pins 2 and 3 with be used for software serial (XBee)
         pinMode(interruptPin, INPUT);
         attachInterrupt(digitalPinToInterrupt(interruptPin), pin_irq_handler, RISING );
     }
