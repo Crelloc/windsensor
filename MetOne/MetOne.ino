@@ -21,8 +21,13 @@ static void Broadcast(int* deg, volatile long* rpm){
 /*!
  This interrupt function is called every quarter second (0.25 hz).
  Every 0.25 seconds calculate rpm for met1 speed sensor.
+
+TIMER1_CAPT_vect:         Timer/Counter1 Capture Event 
+TIMER1_COMPA_vect:        Timer/Counter1 Compare Match A 
+TIMER1_COMPB_vect:        Timer/Counter1 Compare Match B
+TIMER1_OVF_vect:          Timer/Counter1 Overflow
 */
-ISR(TIMER1_OVF_vect)        
+ISR(TIMER1_COMPA_vect)        
 {
     rpm     = counter * 15L;
     rpm    /= 40L;
@@ -47,10 +52,11 @@ void setup() {
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
     Serial.begin(9600);
+    XBee.begin(9600);
     /** initialize timer1 - 16 bit (65536)
     * set timer1 to interrupt at 4Hz or 0.25 sec
     */
-    cli();                                    //stop interrupts
+    noInterrupts();                            // disable all interrupts
     TCCR1A  = 0;
     TCCR1B  = 0;
     TCNT1   = 0;                              // initialize counter value to 0
@@ -59,11 +65,11 @@ void setup() {
     TCCR1B |= (1 << WGM12);                   // turn on CTC mode
     TCCR1B |= ((1 << CS12)| (1 << CS10)) ;    // 1024 prescaler 
     TIMSK1 |= (1 << OCIE1A);                  // enable timer compare interrupt
-    sei();                                    //allow interrupts
+    interrupts();                              // enable all interrupts
 
 /** initialize timer0 - rising edge triggered interrupt - pin 20 */
     {
-        const byte interruptPin = 20;  //digital pins for interrupts: 2, 3, 18, 19, 20, 21
+        const byte interruptPin = 2;  //digital pins for interrupts: 2, 3, 18, 19, 20, 21
                                        //pins 2 and 3 with be used for software serial (XBee)
         pinMode(interruptPin, INPUT);
         attachInterrupt(digitalPinToInterrupt(interruptPin), pin_irq_handler, RISING );
