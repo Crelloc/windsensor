@@ -2,11 +2,10 @@
 
 
 static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
-static volatile long rpm;                          /**< revs per min */
+static volatile long rpm = 0;                      /**< revs per min */
 static volatile bool rw_flag;
 static double sinSum = 0, cosSum = 0;
-static int avg_counter = 0;                        /**< counter to compute the average for avg_adc_x and avg_adc_y*/
-
+static int recent_deg = 0;
 //For Atmega2560, ATmega32U4, etc.
 // XBee's DOUT (TX) is connected to pin 10 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
@@ -93,7 +92,6 @@ void loop() {
         deg = (analogRead(sensorPin) - 0.0f) / (1013.0f - 0.0f) * (360.0f - 0.0f);
         sinSum += sin(deg2rad(deg));
         cosSum += cos(deg2rad(deg));
-        ++avg_counter;
 
         if(rw_flag){
             int deg;
@@ -101,9 +99,9 @@ void loop() {
     
             /**compute average deg*/
             deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
-            Broadcast(&deg, &rpm);
+            recent_deg = deg; //track recent deg value
             cosSum = 0;
             sinSum = 0;
-            avg_counter = 0;
         }
+        Broadcast(&recent_deg, &rpm);
 }
