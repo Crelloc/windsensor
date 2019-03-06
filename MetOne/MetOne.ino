@@ -10,10 +10,12 @@ static int avg_counter = 0;                        /**< counter to compute the a
 //For Atmega2560, ATmega32U4, etc.
 // XBee's DOUT (TX) is connected to pin 10 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
-SoftwareSerial XBee(10, 11); // RX, TX
+SoftwareSerial XBee(8, 9); // RX, TX
 
 static void Broadcast(int* deg, volatile long* rpm){
-    XBee.println(*deg);
+    XBee.print("d ");
+    XBee.print(*deg);
+    XBee.print(" r ");
     XBee.println(*rpm);
 }
 
@@ -29,8 +31,8 @@ TIMER1_OVF_vect:          Timer/Counter1 Overflow
 */
 ISR(TIMER1_COMPA_vect)        
 {
-    rpm     = counter * 15L;
-    rpm    /= 40L;
+    rpm     = counter * 240L; // [pulses/.25sec][60sec/min] = [pulses/min]
+    rpm    /= 40L;            // [pulses/min][1rev/40pulses]=[rev/min]
     rw_flag = 1;
     counter = 0;
 }
