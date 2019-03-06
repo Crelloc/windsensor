@@ -54,7 +54,7 @@ RTC_PCF8523      rtc;
 
 typedef struct Met1{
   long rpm;
-  uint8_t deg;
+  int  deg;
 } Met1;
 
 
@@ -62,11 +62,19 @@ static uint8_t get_string() //read the xbee buffer, return a flag if it's time t
 {
     char c;
     bool flag = 0;
+    bool beginning = 1;
+ 
     while(XBee.available()){ //while there's a chacter in the Xbee buffer, read.  add buffer to the command global variable.  if end of line character, set flag to 1.
         c = XBee.read();
         Serial.write(c); //echo to the screen for debugging
-        if(g_Index == BUF_SIZE){//if index is greater than array size
-            g_Index = BUF_SIZE - 1;
+        if(beginning){
+            beginning = 0;
+            if(c != 'd'){ //if first character in serial isn't d
+                XBee.flush();
+                break;
+            }
+        }else if(g_Index == BUF_SIZE){//if index is greater than array size
+            g_Index = BUF_SIZE - 1; //just prevent buffer overflow
         }  
         if(c == '\n'){ //when termination character has been read, 
             g_Buffer[g_Index] = '\0';  //character arrays should have a terminating null character at the end of string 
@@ -82,18 +90,18 @@ static uint8_t get_string() //read the xbee buffer, return a flag if it's time t
     return flag;
 }
 
-#define GET_VALUE_FROM_XBEE(num)                \
-    do{                                         \
-        while(!get_string());                   \
-        *num = atoi(g_Buffer);                  \
-        memset(g_Buffer, 0, sizeof(g_Buffer));  \
-    }while(0);
 
 static Met1 GetMet1Measurements(){
     Met1 sys;
-
-    GET_VALUE_FROM_XBEE(&sys.deg);
-    GET_VALUE_FROM_XBEE(&sys.rpm);
+    char * ptr_to_g_Buffer = g_Buffer;
+    
+    XBee.flush(); //flush buffer to make sure we get recent results
+    while(!get_string()); //get string from serial buffer and store in g_Buffer array
+    ptr_to_g_Buffer+=1; //ignore d
+    sys.deg = atoi(ptr_to_g_Buffer); //convert deg string to integer
+    while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
+    ptr_to_g_Buffer+=1; //ignore r
+    sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
 
     return sys;
 }
@@ -318,7 +326,7 @@ void loop(void)
 
     if(rw_flag){
         rw_flag = !rw_flag;
-        XBee.flush();
+        
         /**get the average adc results */
         avg_adc_x /= avg_counter;
         avg_adc_y /= avg_counter;
