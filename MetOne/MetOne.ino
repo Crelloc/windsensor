@@ -2,13 +2,16 @@
 
 #define AVG_BUF_SIZE  24 // (6 sec averaging)/(.25sec period) = 24
 static double g_avgdeg_buf[AVG_BUF_SIZE] = {};
+static double g_avgrpm_buf[AVG_BUF_SIZE] = {};
 static double g_avgdeg_sum = 0;
-static volatile int g_avg_buf_pos = 0;
+static double g_avgrpm_sum = 0;
+static volatile int g_avg_buf_pos = -1;
 static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
 static volatile long rpm = 0;                      /**< revs per min */
 static volatile bool rw_flag;
 static double sinSum = 0, cosSum = 0;
 static int recent_deg = 0;
+static long recent_rpm = 0;
 //For Atmega2560, ATmega32U4, etc.
 // XBee's DOUT (TX) is connected to pin 10 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
@@ -136,8 +139,10 @@ void loop() {
             deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
             //track recent deg value with moving average
             recent_deg = movingAverage(g_avgdeg_buf, &g_avgdeg_sum, g_avg_buf_pos, AVG_BUF_SIZE, (double)deg);
+            recent_rpm = movingAverage(g_avgrpm_buf, &g_avgrpm_sum, g_avg_buf_pos, AVG_BUF_SIZE, (double)rpm);
+
             cosSum = 0;
             sinSum = 0;
         }
-        Broadcast(&recent_deg, &rpm);
+        Broadcast(&recent_deg, &recent_rpm);
 }
