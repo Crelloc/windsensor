@@ -103,9 +103,9 @@ static Met1 GetMet1Measurements(){
     while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
     ptr_to_g_Buffer+=1; //ignore r
     sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
-    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore deg value
+    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore rpm value
     ptr_to_g_Buffer+=1; //ignore v
-    sys.vel = atof(ptr_to_g_Buffer); //convert vel to float value
+    sys.vel = atof(ptr_to_g_Buffer); //convert vel string to float value
 
     return sys;
 }
