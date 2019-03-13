@@ -55,6 +55,7 @@ RTC_PCF8523      rtc;
 typedef struct Met1{
   long rpm;
   int  deg;
+  double vel;
 } Met1;
 
 
@@ -93,7 +94,7 @@ static uint8_t get_string() //read the xbee buffer, return a flag if it's time t
 
 static Met1 GetMet1Measurements(){
     Met1 sys;
-    char * ptr_to_g_Buffer = g_Buffer;
+    char * ptr_to_g_Buffer = g_Buffer; //get buffer location
     
     XBee.flush(); //flush buffer to make sure we get recent results
     while(!get_string()); //get string from serial buffer and store in g_Buffer array
@@ -102,6 +103,9 @@ static Met1 GetMet1Measurements(){
     while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
     ptr_to_g_Buffer+=1; //ignore r
     sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
+    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore deg value
+    ptr_to_g_Buffer+=1; //ignore v
+    sys.vel = atof(ptr_to_g_Buffer); //convert vel to float value
 
     return sys;
 }
@@ -130,7 +134,6 @@ static void logToSD()
     char x_adc[16];
     char y_adc[16];
     char vel[16];
-    float V;
     float pressureKPA        = 0;
     float temperatureC       = 0;
     DateTime now             = rtc.now();
@@ -149,10 +152,9 @@ static void logToSD()
     */
     mpl115a2.getPT(&pressureKPA,&temperatureC);
     sys = GetMet1Measurements();
-    V   = (sys.rpm / 16.767f) + 0.6f;
     sprintf_f(avg_adc_x, x_adc);
     sprintf_f(avg_adc_y, y_adc);
-    sprintf_f(V, vel);
+    sprintf_f(sys.vel, vel);
 
     sprintf(buf,"%04d/%02d/%02d %02d:%02d:%02d, "
                 "%s, "
