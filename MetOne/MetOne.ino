@@ -1,6 +1,9 @@
 #include <SoftwareSerial.h> //for xbee shield
 
-
+#define AVG_BUF_SIZE  24 // (6 sec averaging)/(.25sec period) = 24
+static double g_avgdeg_buf[AVG_BUF_SIZE] = {};
+static double g_avgdeg_sum = 0;
+static volatile int g_avg_buf_pos = 0;
 static volatile int counter;                       /**< counter for the # of digital pulses that are outputed by the Met1 speed sensor*/
 static volatile long rpm = 0;                      /**< revs per min */
 static volatile bool rw_flag;
@@ -11,16 +14,43 @@ static int recent_deg = 0;
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
 SoftwareSerial XBee(8, 9); // RX, TX
 
+
+/**
+ * Compute moving average and add sample to ring buffer
+*/
+double movingAverage(double *Arr, double *Sum, volatile int pos, int len, double num)
+{
+    *Sum     = *Sum - Arr[pos] + num;
+    Arr[pos] = num;
+    return *Sum / len;
+}
+
+
+static void sprintf_f(float fval, char *c)
+{
+    char *tmpSign = (fval < 0) ? (char*)"-"   : (char*)"";
+    float tmpVal  = (fval < 0) ? -fval : fval;
+
+    int tmpInt1   = tmpVal;
+    float tmpFrac = tmpVal - tmpInt1;
+    int tmpInt2 = trunc(tmpFrac * 10000);
+
+    sprintf(c, "%s%d.%04d", tmpSign, tmpInt1, tmpInt2);
+}
+
 static void Broadcast(int* deg, volatile long* rpm){
-    XBee.print("d ");
-    XBee.print(*deg);
-    XBee.print(" r ");
-    XBee.println(*rpm);
+    char buf[100];
+    char vel[20];
+
+    sprintf_f((*rpm / 16.767f) + 0.6f, vel);
+    sprintf(buf, "d %d r %ld v %s", *deg, *rpm, vel);
+    XBee.println(buf);
+    Serial.println(buf);
 }
 
 //! Timer1 hardware interrupt
 /*!
- This interrupt function is called every quarter second (0.25 hz).
+ This interrupt function is called every quarter second (4 hz).
  Every 0.25 seconds calculate rpm for met1 speed sensor.
 
 TIMER1_CAPT_vect:         Timer/Counter1 Capture Event 
@@ -34,6 +64,11 @@ ISR(TIMER1_COMPA_vect)
     rpm    /= 40L;            // [pulses/min][1rev/40pulses]=[rev/min]
     rw_flag = 1;
     counter = 0;
+    ++g_avg_buf_pos;
+
+    if(g_avg_buf_pos == AVG_BUF_SIZE){ //end of ring buffer check
+        g_avg_buf_pos = 0;
+    }
 }
 //! rising edge triggered interrupt
 /*!
@@ -99,7 +134,8 @@ void loop() {
     
             /**compute average deg*/
             deg = (int)(rad2deg(atan2(sinSum, cosSum)) + 360.0) % 360;
-            recent_deg = deg; //track recent deg value
+            //track recent deg value with moving average
+            recent_deg = movingAverage(g_avgdeg_buf, &g_avgdeg_sum, g_avg_buf_pos, AVG_BUF_SIZE, (double)deg);
             cosSum = 0;
             sinSum = 0;
         }
