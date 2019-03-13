@@ -41,7 +41,7 @@ Adafruit_MPL115A2 mpl115a2;
 //For Atmega2560, ATmega32U4, etc.
 // XBee's DOUT (TX) is connected to pin 10 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
-SoftwareSerial XBee(10, 11); // RX, TX
+SoftwareSerial XBee(2, 3); // RX, TX
 
 
 static volatile bool rw_flag;
