@@ -2,7 +2,7 @@
  * @file inline.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 02-14-19
+ *Last Modified: 03-13-19
  *
  *
  */
@@ -133,6 +133,8 @@ static void logToSD()
     char buf[500];
     char x_adc[16];
     char y_adc[16];
+    char pressure[16];
+    char tempC[16];
     char vel[16];
     float pressureKPA        = 0;
     float temperatureC       = 0;
@@ -154,6 +156,8 @@ static void logToSD()
     sys = GetMet1Measurements();
     sprintf_f(avg_adc_x, x_adc);
     sprintf_f(avg_adc_y, y_adc);
+    sprintf_f(pressureKPA, pressure);
+    sprintf_f(temperatureC, tempC);
     sprintf_f(sys.vel, vel);
 
     sprintf(buf,"%04d/%02d/%02d %02d:%02d:%02d, "
@@ -166,7 +170,7 @@ static void logToSD()
                 "%s, "
                 ,year, month, day, hour, minute, second,
                 x_adc, y_adc, sys.deg, sys.rpm, vel,
-                pressureKPA, temperatureC);
+                pressure, tempC);
 
     Serial.println(buf);
     if(dataFile){
