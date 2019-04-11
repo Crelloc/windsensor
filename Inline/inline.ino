@@ -2,7 +2,7 @@
  * @file inline.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 03-13-19
+ *Last Modified: 04-11-19
  *
  *
  */
@@ -13,12 +13,12 @@
 #include <SD.h>
 #include <RTClib.h>
 #include <HX711.h>
-#define DOUTA   4                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
-#define CLKA    3                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
-#define DOUTB   6                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
-#define CLKB    5                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
+#define DOUTA   7                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
+#define CLKA    6                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
+#define DOUTB   5                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
+#define CLKB    4                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
 #define calibration_factor  1.0f                   /*!< Calibration factor for load cells using hx711 */
-#define BUF_SIZE 16
+#define BUF_SIZE 50
 //! Using HX711 constructor
 /*!
  The HX711 load cell amplifier will be connected to digital pins of arduino.
@@ -59,53 +59,54 @@ typedef struct Met1{
 } Met1;
 
 
-static uint8_t get_string() //read the xbee buffer, return a flag if it's time to execute.
+static void get_string() //read the xbee buffer, return a flag if it's time to execute.
 {
     char c;
-    bool flag = 0;
-    bool beginning = 1;
- 
+    int ret = 0;
+    bool beginning = false;
+LOOP:
     while(XBee.available()){ //while there's a chacter in the Xbee buffer, read.  add buffer to the command global variable.  if end of line character, set flag to 1.
         c = XBee.read();
-        Serial.write(c); //echo to the screen for debugging
-        if(beginning){
-            beginning = 0;
-            if(c != 'd'){ //if first character in serial isn't d
-                XBee.flush();
+        //Serial.write(c);
+        //delay(1);
+        if(beginning || (c == 'd')){
+            if(!beginning)
+                beginning = true;
+            if(c != '\n')
+                g_Buffer[g_Index] = c; //store character in array
+            else {
+                g_Buffer[g_Index] = '\0';
+                g_Index = 0;
+                ret = 1;
                 break;
             }
-        }else if(g_Index == BUF_SIZE){//if index is greater than array size
-            g_Index = BUF_SIZE - 1; //just prevent buffer overflow
-        }  
-        if(c == '\n'){ //when termination character has been read, 
-            g_Buffer[g_Index] = '\0';  //character arrays should have a terminating null character at the end of string 
-            g_Index = 0; //rest index to store character
-            flag = 1; //enable flag for command to be executed
-            break;
-        } else {
-            g_Buffer[g_Index] = c;  //store character in array
+            ++g_Index;
+            if(g_Index>=BUF_SIZE){
+                g_Index = BUF_SIZE - 1; //just prevent buffer overflow
+            }
         }
-        g_Index++;  //move to next position
-         
+  }
+    if(ret == 0){
+        goto LOOP;
     }
-    return flag;
 }
 
 
 static Met1 GetMet1Measurements(){
     Met1 sys;
     char * ptr_to_g_Buffer = g_Buffer; //get buffer location
-    
+
     XBee.flush(); //flush buffer to make sure we get recent results
-    while(!get_string()); //get string from serial buffer and store in g_Buffer array
-    ptr_to_g_Buffer+=1; //ignore d
-    sys.deg = atoi(ptr_to_g_Buffer); //convert deg string to integer
-    while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
-    ptr_to_g_Buffer+=1; //ignore r
-    sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
-    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore rpm value
-    ptr_to_g_Buffer+=1; //ignore v
-    sys.vel = atof(ptr_to_g_Buffer); //convert vel string to float value
+    get_string(); //get string from serial buffer and store in g_Buffer array
+    Serial.println(g_Buffer); //
+//    ptr_to_g_Buffer+=1; //ignore d
+//    sys.deg = atoi(ptr_to_g_Buffer); //convert deg string to integer
+//    while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
+//    ptr_to_g_Buffer+=1; //ignore r
+//    sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
+//    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore rpm value
+//    ptr_to_g_Buffer+=1; //ignore v
+//    sys.vel = atof(ptr_to_g_Buffer); //convert vel string to float value
 
     return sys;
 }
@@ -129,56 +130,56 @@ static void sprintf_f(float fval, char *c)
 */
 static void logToSD()
 {
-    Met1 sys;
-    char buf[500];
-    char x_adc[16];
-    char y_adc[16];
-    char pressure[16];
-    char tempC[16];
-    char vel[16];
-    float pressureKPA        = 0;
-    float temperatureC       = 0;
-    DateTime now             = rtc.now();
-    byte year                = now.year();
-    byte month               = now.month();
-    byte day                 = now.day();
-    byte hour                = now.hour();
-    byte minute              = now.minute();
-    byte second              = now.second();
-    File dataFile            = SD.open("datalog.txt", FILE_WRITE);
+      Met1 sys;
+//    char buf[500];
+//    char x_adc[16];
+//    char y_adc[16];
+//    char pressure[16];
+//    char tempC[16];
+//    char vel[16];
+//    float pressureKPA        = 0;
+//    float temperatureC       = 0;
+//    DateTime now             = rtc.now();
+//    byte year                = now.year();
+//    byte month               = now.month();
+//    byte day                 = now.day();
+//    byte hour                = now.hour();
+//    byte minute              = now.minute();
+//    byte second              = now.second();
+//    File dataFile            = SD.open("datalog.txt", FILE_WRITE);
 
     //! get pressure and temperature from mpl115a2 sensor
     /*!
       \param pressureKPA a float passed by reference
       \param temperatureC a float passed by reference
     */
-    mpl115a2.getPT(&pressureKPA,&temperatureC);
+    //mpl115a2.getPT(&pressureKPA,&temperatureC);
     sys = GetMet1Measurements();
-    sprintf_f(avg_adc_x, x_adc);
-    sprintf_f(avg_adc_y, y_adc);
-    sprintf_f(pressureKPA, pressure);
-    sprintf_f(temperatureC, tempC);
-    sprintf_f(sys.vel, vel);
+//    sprintf_f(avg_adc_x, x_adc);
+//    sprintf_f(avg_adc_y, y_adc);
+//    sprintf_f(pressureKPA, pressure);
+//    sprintf_f(temperatureC, tempC);
+//    sprintf_f(sys.vel, vel);
 
-    sprintf(buf,"%04d/%02d/%02d %02d:%02d:%02d, "
-                "%s, "
-                "%s, "
-                "%d, "
-                "%ld, "
-                "%s, "
-                "%s, "
-                "%s, "
-                ,year, month, day, hour, minute, second,
-                x_adc, y_adc, sys.deg, sys.rpm, vel,
-                pressure, tempC);
-
-    Serial.println(buf);
-    if(dataFile){
-        dataFile.println(buf);                                         
-        dataFile.close();
-    } else{
-        Serial.println("Failed to open or create datalog.txt");       
-    }
+//    sprintf(buf,"%04d/%02d/%02d %02d:%02d:%02d, "
+//                "%s, "
+//                "%s, "
+//                "%d, "
+//                "%ld, "
+//                "%s, "
+//                "%s, "
+//                "%s, "
+//                ,year, month, day, hour, minute, second,
+//                x_adc, y_adc, sys.deg, sys.rpm, vel,
+//                pressure, tempC);
+//
+//    Serial.println(buf);
+//    if(dataFile){
+//        dataFile.println(buf);                                         
+//        dataFile.close();
+//    } else{
+//        Serial.println("Failed to open or create datalog.txt");       
+//    }
 //    str = "";
 //    str += String(now.year(), DEC);
 //    str += '/';
@@ -217,6 +218,7 @@ void setup(void)
         ; /**< wait for serial port to connect. Needed for native USB port only */
     }
     Serial.begin(9600);
+    XBee.begin(9600);
     Serial.println("testing!");
     mpl115a2.begin(); //for pressure and temp sensor
     
@@ -332,7 +334,6 @@ void loop(void)
 
     if(rw_flag){
         rw_flag = !rw_flag;
-        
         /**get the average adc results */
         avg_adc_x /= avg_counter;
         avg_adc_y /= avg_counter;
