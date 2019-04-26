@@ -58,26 +58,25 @@ typedef struct Met1{
   double vel;
 } Met1;
 
+bool g_beginning = false;
+int g_ret = 0;
 
-static void get_string() //read the xbee buffer, return a flag if it's time to execute.
+static int get_string() //read the xbee buffer, return a flag if it's time to execute.
 {
-    char c;
     int ret = 0;
-    bool beginning = false;
-LOOP:
     while(XBee.available()){ //while there's a chacter in the Xbee buffer, read.  add buffer to the command global variable.  if end of line character, set flag to 1.
-        c = XBee.read();
+        char c = XBee.read();
         //Serial.write(c);
-        //delay(1);
-        if(beginning || (c == 'd')){
-            if(!beginning)
-                beginning = true;
-            if(c != '\n')
+        if(g_beginning || (c == 'd')){
+            if(!g_beginning)
+                g_beginning = true;
+            if(c != '\r')
                 g_Buffer[g_Index] = c; //store character in array
             else {
                 g_Buffer[g_Index] = '\0';
                 g_Index = 0;
                 ret = 1;
+                g_beginning = false;
                 break;
             }
             ++g_Index;
@@ -86,28 +85,27 @@ LOOP:
             }
         }
   }
-    if(ret == 0){
-        goto LOOP;
-    }
+  return ret;
 }
 
 
 static Met1 GetMet1Measurements(){
     Met1 sys;
     char * ptr_to_g_Buffer = g_Buffer; //get buffer location
+    Serial.println(ptr_to_g_Buffer);
+    
+    ptr_to_g_Buffer+=1; //ignore d
+    sys.deg = atoi(ptr_to_g_Buffer); //convert deg string to integer
+    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore rpm value
+    ptr_to_g_Buffer+=1; //ignore v
+    sys.vel = atof(ptr_to_g_Buffer); //convert vel string to float value
+    while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
+    ptr_to_g_Buffer+=1; //ignore r
+    sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
 
-    XBee.flush(); //flush buffer to make sure we get recent results
-    get_string(); //get string from serial buffer and store in g_Buffer array
-    Serial.println(g_Buffer); //
-//    ptr_to_g_Buffer+=1; //ignore d
-//    sys.deg = atoi(ptr_to_g_Buffer); //convert deg string to integer
-//    while(*ptr_to_g_Buffer != 'r'){ptr_to_g_Buffer+=1;} //ignore deg value
-//    ptr_to_g_Buffer+=1; //ignore r
-//    sys.rpm = atol(ptr_to_g_Buffer); //convert rpm string to long
-//    while(*ptr_to_g_Buffer != 'v'){ptr_to_g_Buffer+=1;} //ignore rpm value
-//    ptr_to_g_Buffer+=1; //ignore v
-//    sys.vel = atof(ptr_to_g_Buffer); //convert vel string to float value
-
+    Serial.print("\ndegrees is: "), Serial.println(sys.deg);
+    Serial.print("velocity is: "), Serial.println(sys.vel);
+    Serial.print("rpm is: "), Serial.println(sys.rpm);
     return sys;
 }
 
@@ -130,8 +128,8 @@ static void sprintf_f(float fval, char *c)
 */
 static void logToSD()
 {
-      Met1 sys;
-//    char buf[500];
+    Met1 sys;
+//    char buf[100];
 //    char x_adc[16];
 //    char y_adc[16];
 //    char pressure[16];
@@ -160,7 +158,7 @@ static void logToSD()
 //    sprintf_f(pressureKPA, pressure);
 //    sprintf_f(temperatureC, tempC);
 //    sprintf_f(sys.vel, vel);
-
+//
 //    sprintf(buf,"%04d/%02d/%02d %02d:%02d:%02d, "
 //                "%s, "
 //                "%s, "
@@ -197,11 +195,11 @@ static void logToSD()
 //    str += ", ";
 //    str += String(avg_adc_y, 4);
 //    str += ", ";
-//    str += String(met1->deg);
+//    str += String(sys.deg);
 //    str += ", ";
-//    str += String(met1->rpm);
+//    str += String(sys.rpm);
 //    str += ", ";
-//    str += String(V);
+//    str += String(sys.vel);
 //    str += ", ";
 //    str += String(pressureKPA, 4);
 //    str += ", ";
@@ -220,37 +218,37 @@ void setup(void)
     Serial.begin(9600);
     XBee.begin(9600);
     Serial.println("testing!");
-    mpl115a2.begin(); //for pressure and temp sensor
-    
-    if (! rtc.begin()) {
-        Serial.println("Couldn't find RTC");
-    }
-    if (! rtc.initialized()) {
-        Serial.println("RTC is NOT running!");
-        // following line sets the RTC to the date & time this sketch was compiled
-        //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-        // This line sets the RTC with an explicit date & time, for example to set
-        // January 21, 2014 at 3am you would call:
-        // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-    }
-    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-
-
-    Serial.print("\nInitializing SD card...");
-    /** make sure that the default chip select pin is set to
-     *  output, even if you don't use it:
-     */
-    pinMode(chipSelect, OUTPUT); 
-   
-    if (!SD.begin(chipSelect)) {
-        Serial.println("initialization failed. Things to check:");
-        Serial.println("* is a card inserted?");
-        Serial.println("* is your wiring correct?");
-        Serial.println("* did you change the chipSelect pin to match your shield or module?");
-    } else {
-        Serial.println("Wiring is correct and a card is present.");
-    }
-
+//    mpl115a2.begin(); //for pressure and temp sensor
+//    
+//    if (! rtc.begin()) {
+//        Serial.println("Couldn't find RTC");
+//    }
+//    if (! rtc.initialized()) {
+//        Serial.println("RTC is NOT running!");
+//        // following line sets the RTC to the date & time this sketch was compiled
+//        //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+//        // This line sets the RTC with an explicit date & time, for example to set
+//        // January 21, 2014 at 3am you would call:
+//        // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+//    }
+//    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+//
+//
+//    Serial.print("\nInitializing SD card...");
+//    /** make sure that the default chip select pin is set to
+//     *  output, even if you don't use it:
+//     */
+//    pinMode(chipSelect, OUTPUT); 
+//   
+//    if (!SD.begin(chipSelect)) {
+//        Serial.println("initialization failed. Things to check:");
+//        Serial.println("* is a card inserted?");
+//        Serial.println("* is your wiring correct?");
+//        Serial.println("* did you change the chipSelect pin to match your shield or module?");
+//    } else {
+//        Serial.println("Wiring is correct and a card is present.");
+//    }
+//
     x_scale.set_scale(calibration_factor);
     y_scale.set_scale(calibration_factor);
     x_scale.set_gain(64);
@@ -268,18 +266,18 @@ void setup(void)
     interrupts();             // enable all interrupts
 
 
-    {
-        File dataFile = SD.open("datalog.txt", FILE_WRITE);
-        if(dataFile){
-            dataFile.println("time, x_kg, y_kg, dir, rpm, Vel, kPa, celsius");
-            dataFile.close();
-            
-        } else{
-            Serial.println("Error creating or opening datalog.txt!");
-        }
-        Serial.println("time, x_kg, y_kg,  dir, rpm, Vel, kPa, celsius");
-        
-    }
+//    {
+//        File dataFile = SD.open("datalog.txt", FILE_WRITE);
+//        if(dataFile){
+//            dataFile.println("time, x_kg, y_kg, dir, rpm, Vel, kPa, celsius");
+//            dataFile.close();
+//            
+//        } else{
+//            Serial.println("Error creating or opening datalog.txt!");
+//        }
+//        Serial.println("time, x_kg, y_kg,  dir, rpm, Vel, kPa, celsius");
+//        
+//    }
 }
 
 //! Timer1 hardware interrupt
@@ -289,7 +287,7 @@ void setup(void)
 */
 ISR(TIMER1_OVF_vect)        
 {
-#define PERIOD_THRESHOLD 6 /**< 6 second period*/
+#define PERIOD_THRESHOLD 2 /**< 6 second period*/
     TCNT1 = 49911;
     g_cycles++;
     
@@ -323,6 +321,8 @@ ISR(TIMER1_OVF_vect)
 void loop(void)
 {   
 
+    g_ret = get_string();
+      
     //! Averaging for load cells
     /*!
       Get digital value from hx711 and scale.
@@ -330,9 +330,9 @@ void loop(void)
     */
     avg_adc_x    += (x_scale.read() / (double)MAX_ADC_VAL); 
     avg_adc_y    += (y_scale.read() / (double)MAX_ADC_VAL);
+    avg_counter++;
 
-
-    if(rw_flag){
+    if(rw_flag && g_ret){
         rw_flag = !rw_flag;
         /**get the average adc results */
         avg_adc_x /= avg_counter;
@@ -348,7 +348,9 @@ void loop(void)
         avg_adc_y = 0;
 
         avg_counter = 0;
-        
+    } else if(!rw_flag && g_ret){
+        memset(g_Buffer, 0, strlen(g_Buffer));
+        XBee.flush();
     }
     
 }
