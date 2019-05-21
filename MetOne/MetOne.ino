@@ -16,6 +16,18 @@ static long recent_rpm = 0;
 // XBee's DOUT (TX) is connected to pin 10 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
 SoftwareSerial XBee(8, 9); // RX, TX
+#include <Adafruit_BME280.h>
+
+#define BME_SCK 13
+#define BME_MISO 12
+#define BME_MOSI 6
+#define BME_CS 5
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+// Adafruit_BME280 bme; // I2C
+// Adafruit_BME280 bme(BME_CS); // hardware SPI
+ Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
 
 
 /**
@@ -41,14 +53,28 @@ static void sprintf_f(float fval, char *c)
     sprintf(c, "%s%d.%04d", tmpSign, tmpInt1, tmpInt2);
 }
 
-static void Broadcast(int* deg, volatile long* rpm){
-    char buf[100];
-    char vel[20];
-
-    sprintf_f((*rpm / 16.767f) + 0.6f, vel);
-    sprintf(buf, "d %d r %ld v %s", *deg, *rpm, vel);
-    XBee.println(buf);
-    Serial.println(buf);
+static void Broadcast(int* deg, volatile long* rpm, Adafruit_BME280* bme_ptr){
+//    char buf[100];
+//    char vel[20];
+//
+//    sprintf_f((*rpm / 16.767f) + 0.6f, vel);
+//    sprintf(buf, "d %d r %ld v %s", *deg, *rpm, vel);
+//    XBee.println(buf);
+//    Serial.println(buf);
+    XBee.print(" d ");
+    XBee.print(*deg);
+    XBee.print(" r ");
+    XBee.print(*rpm);
+    XBee.print(" v ");
+    XBee.print((*rpm / 16.767f) + 0.6f);
+    XBee.print(" t ");
+    XBee.print(bme_ptr->readTemperature());
+    XBee.print(" p ");
+    XBee.print(bme_ptr->readPressure()/100.0F);
+    XBee.print(" a ");
+    XBee.print(bme_ptr->readAltitude(SEALEVELPRESSURE_HPA));
+    XBee.print(" h ");
+    XBee.println(bme_ptr->readHumidity());
 }
 
 //! Timer1 hardware interrupt
@@ -92,6 +118,9 @@ void setup() {
     }
     Serial.begin(9600);
     XBee.begin(9600);
+    if (!bme.begin()) {
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    }
     /** initialize timer1 - 16 bit (65536)
     * set timer1 to interrupt at 4Hz or 0.25 sec
     */
@@ -140,9 +169,9 @@ void loop() {
             //track recent deg value with moving average
             recent_deg = movingAverage(g_avgdeg_buf, &g_avgdeg_sum, g_avg_buf_pos, AVG_BUF_SIZE, (double)deg);
             recent_rpm = movingAverage(g_avgrpm_buf, &g_avgrpm_sum, g_avg_buf_pos, AVG_BUF_SIZE, (double)rpm);
-
+            Broadcast(&recent_deg, &recent_rpm, &bme);
             cosSum = 0;
             sinSum = 0;
         }
-        Broadcast(&recent_deg, &recent_rpm);
+        
 }
