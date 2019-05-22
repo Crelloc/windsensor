@@ -124,12 +124,12 @@ static Met1 GetMet1Measurements(){
 
 
     Serial.print("\ndegrees is: "), Serial.println(sys.deg);
-    Serial.print("velocity is: "), Serial.println(sys.vel);
-    Serial.print("rpm is: "), Serial.println(sys.rpm);
-    Serial.print("temp is: "), Serial.println(sys.temp);
-    Serial.print("pressure is: "), Serial.println(sys.pressure);
-    Serial.print("altitude is: "), Serial.println(sys.alt);
-    Serial.print("humidity is: "), Serial.println(sys.hum);
+    Serial.print("\nvelocity is: "), Serial.println(sys.vel);
+    Serial.print("\nrpm is: "), Serial.println(sys.rpm);
+    Serial.print("\ntemp is: "), Serial.println(sys.temp);
+    Serial.print("\npressure is: "), Serial.println(sys.pressure);
+    Serial.print("\naltitude is: "), Serial.println(sys.alt);
+    Serial.println("\nhumidity is: "), Serial.println(sys.hum);
 
     return sys;
 }
