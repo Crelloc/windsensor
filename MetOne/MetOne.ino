@@ -63,10 +63,10 @@ static void Broadcast(int* deg, volatile long* rpm, Adafruit_BME280* bme_ptr){
 //    Serial.println(buf);
     XBee.print(" d ");
     XBee.print(*deg);
-    XBee.print(" r ");
-    XBee.print(*rpm);
     XBee.print(" v ");
     XBee.print((*rpm / 16.767f) + 0.6f);
+    XBee.print(" r ");
+    XBee.print(*rpm);
     XBee.print(" t ");
     XBee.print(bme_ptr->readTemperature());
     XBee.print(" p ");
