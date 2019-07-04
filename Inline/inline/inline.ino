@@ -2,7 +2,7 @@
  * @file inline.ino
  *Inline load cell Project
  *Author: Thomas Turner (thomastdt@gmail.com)
- *Last Modified: 04-11-19
+ *Last Modified: 07-03-19
  *
  *
  */
@@ -36,12 +36,18 @@ HX711 x_scale(DOUTA, CLKA);
 HX711 y_scale(DOUTB, CLKB);
 
 
-Adafruit_MPL115A2 mpl115a2;    
+//Adafruit_MPL115A2 mpl115a2;    
              
 //For Atmega2560, ATmega32U4, etc.
-// XBee's DOUT (TX) is connected to pin 10 (Arduino's Software RX)
-// XBee's DIN (RX) is connected to pin 11 (Arduino's Software TX)
-SoftwareSerial XBee(2, 3); // RX, TX
+// XBee's DOUT (TX) is connected to pin 11 (Arduino's Software RX)
+// XBee's DIN (RX) is connected to pin 3 (Arduino's Software TX)
+// Only pins available for RECEIVE (TRANSMIT can be on any pin):
+// (I've deliberately left out pin mapping to the Hardware USARTs - seems senseless to me)
+// Pins: 10, 11, 12, 13,  50, 51, 52, 53,  62, 63, 64, 65, 66, 67, 68, 69
+// The XBee shield dout and din is hardwired to pins 2 (RX) and 3 (DX): So for Mega,
+// to use pin 11 for RX, tie pins 2 and 11 together.
+//
+SoftwareSerial XBee(11, 3); // RX, TX (Arduino)
 
 
 static volatile bool rw_flag;
@@ -163,7 +169,7 @@ static void logToSD(double avg_adc_x, double avg_adc_y)
     float pressureKPA        = 0;
     float temperatureC       = 0;
     DateTime now             = rtc.now();
-    byte year                = now.year();
+    uint16_t year            = now.year();
     byte month               = now.month();
     byte day                 = now.day();
     byte hour                = now.hour();
@@ -176,7 +182,7 @@ static void logToSD(double avg_adc_x, double avg_adc_y)
       \param pressureKPA a float passed by reference
       \param temperatureC a float passed by reference
     */
-    mpl115a2.getPT(&pressureKPA,&temperatureC);
+//    mpl115a2.getPT(&pressureKPA,&temperatureC);
     sys = GetMet1Measurements();
 //    sprintf_f(avg_adc_x, x_adc);
 //    sprintf_f(avg_adc_y, y_adc);
@@ -283,7 +289,7 @@ void setup(void)
     Serial.begin(9600);
     XBee.begin(9600);
     Serial.println("testing!");
-    mpl115a2.begin(); //for pressure and temp sensor
+//    mpl115a2.begin(); //for pressure and temp sensor
     
     if (! rtc.begin()) {
         Serial.println("Couldn't find RTC");
