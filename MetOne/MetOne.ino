@@ -53,28 +53,40 @@ static void sprintf_f(float fval, char *c)
     sprintf(c, "%s%d.%04d", tmpSign, tmpInt1, tmpInt2);
 }
 
+static unsigned long SumAndInvert(String data, int len){//checksum: invert after sum is calculated
+    unsigned long sum = 0;
+    int i;
+
+    for(i=0; i<len; ++i){
+        sum += data[i];
+    }
+
+    return ~sum;
+}
+
+static void TEST_FUNCTION(){
+    String str = " 23";
+
+    Serial.println(str.toInt());
+    while(1);
+}
+
+static String create_message(int** deg, volatile long** rpm, Adafruit_BME280** bme_ptr){
+    String data;
+
+    data = ("d " + String(**deg)
+         + " v " + String((**rpm / 16.767f) + 0.6f)
+         + " r " + String(**rpm)
+         + " t " + String((*bme_ptr)->readTemperature())
+         + " p " + String((*bme_ptr)->readPressure()/100.0F)
+         + " a " + String((*bme_ptr)->readAltitude(SEALEVELPRESSURE_HPA))
+         + " h " + String((*bme_ptr)->readHumidity()));
+
+    return (data + " c " + String(SumAndInvert(data, data.length())));
+}
 static void Broadcast(int* deg, volatile long* rpm, Adafruit_BME280* bme_ptr){
-//    char buf[100];
-//    char vel[20];
-//
-//    sprintf_f((*rpm / 16.767f) + 0.6f, vel);
-//    sprintf(buf, "d %d r %ld v %s", *deg, *rpm, vel);
-//    XBee.println(buf);
-//    Serial.println(buf);
-    XBee.print(" d ");
-    XBee.print(*deg);
-    XBee.print(" v ");
-    XBee.print((*rpm / 16.767f) + 0.6f);
-    XBee.print(" r ");
-    XBee.print(*rpm);
-    XBee.print(" t ");
-    XBee.print(bme_ptr->readTemperature());
-    XBee.print(" p ");
-    XBee.print(bme_ptr->readPressure()/100.0F);
-    XBee.print(" a ");
-    XBee.print(bme_ptr->readAltitude(SEALEVELPRESSURE_HPA));
-    XBee.print(" h ");
-    XBee.println(bme_ptr->readHumidity());
+
+    XBee.println(create_message(&deg, &rpm, &bme_ptr));
 }
 
 //! Timer1 hardware interrupt
@@ -148,7 +160,9 @@ void setup() {
     rw_flag = 0;
 }
 
+
 void loop() {
+        TEST_FUNCTION();
         float deg;
         const int sensorPin = A3;    /**< input value: wind sensor analog */
         
