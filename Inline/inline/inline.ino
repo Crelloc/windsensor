@@ -12,7 +12,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <RTClib.h>
-#include <HX711.h>
+#include "HX711.h"
 #define DOUTA   7                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
 #define CLKA    6                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON X-AXIS */
 #define DOUTB   5                           /*!< digital pin for Hx711: USED FOR LOAD CELL ON Y-AXIS */
@@ -25,7 +25,7 @@
  \param DOUTA the pin number to arduino digital
  \param CLKA the pin number to arduino digital
 */
-HX711 x_scale(DOUTA, CLKA);
+//HX711 x_scale(DOUTA, CLKA);
 
 //! Using HX711 constructor
 /*!
@@ -33,7 +33,7 @@ HX711 x_scale(DOUTA, CLKA);
  \param DOUTA the pin number to arduino digital
  \param CLKA the pin number to arduino digital
 */
-HX711 y_scale(DOUTB, CLKB);
+//HX711 y_scale(DOUTB, CLKB);
 
 
 //Adafruit_MPL115A2 mpl115a2;    
@@ -57,6 +57,8 @@ static int avg_counter = 0;                        /**< counter to compute the a
 static uint8_t g_Index;
 static char g_Buffer[BUF_SIZE];
 RTC_PCF8523      rtc;
+static unsigned long g_sum = 0;
+static bool g_ctag = false;
 
 typedef struct Met1{
   long rpm;
@@ -68,22 +70,59 @@ typedef struct Met1{
 bool g_beginning = false;
 int g_ret = 0;
 
+
+static int checksum(unsigned long mysum, char * data){
+    int ret = 0;
+    char * c;
+    unsigned long sum;
+
+    c = strchr(data, 'c'); //find c tag in data string
+    if (c == NULL){
+        Serial.println("c tag not found!");
+        return ret;
+    }
+    c++; //ignore 'c'
+    sum = atol(c); //get sum value from data
+    //Serial.print("sum: "); Serial.println(sum);
+    if(sum != mysum) //if checksum doesn't match return false
+        return ret;
+
+    return 1;
+}
+
+static void TEST(void){
+    char num[] = "123";
+    char str[] = "c 123";
+    char c = ' ';
+    unsigned long sum = 123;
+    Serial.println((long)c);
+    Serial.println(atol(num));
+    Serial.println(checksum(sum, str));
+    while(1);
+}
 static int get_string() //read the xbee buffer, return a flag if it's time to execute.
 {
     int ret = 0;
+
     while(XBee.available()){ //while there's a chacter in the Xbee buffer, read.  add buffer to the command global variable.  if end of line character, set flag to 1.
         char c = XBee.read();
         //Serial.write(c);
         if(g_beginning || (c == 'd')){
             if(!g_beginning)
                 g_beginning = true;
-            if(c != '\n')
+            if(c != '\n'){
                 g_Buffer[g_Index] = c; //store character in array
+                if(c == 'c')
+                    g_ctag = true;
+                if(g_ctag == false)
+                    g_sum = g_sum + c;
+            }
             else {
                 g_Buffer[g_Index] = '\0';
                 g_Index = 0;
                 ret = 1;
                 g_beginning = false;
+                g_sum = ~(g_sum - ' '); //remove space (that's before the ctage, ie, " c 123") from calculation and then invert g_sum
                 break;
             }
             ++g_Index;
@@ -320,10 +359,10 @@ void setup(void)
         Serial.println("Wiring is correct and a card is present.");
     }
 
-    x_scale.set_scale(calibration_factor);
-    y_scale.set_scale(calibration_factor);
-    x_scale.set_gain(64);
-    y_scale.set_gain(64);
+    //x_scale.set_scale(calibration_factor);
+    //y_scale.set_scale(calibration_factor);
+    //x_scale.set_gain(64);
+    //y_scale.set_gain(64);
 
     
 /** initialize timer1 - 16 bit (65536) */
@@ -393,16 +432,18 @@ ISR(TIMER1_OVF_vect)
 
 void loop(void)
 {   
-
+    //TEST();
     g_ret = get_string();
-      
+    if(g_ret == 1){
+        g_ret = checksum(g_sum, g_Buffer);
+    }
     //! Averaging for load cells
     /*!
       Get digital value from hx711 and scale.
       Scale by Maximum ADC Value for 24 bit resolution.
     */
-    avg_adc_x    += (x_scale.read() / (double)MAX_ADC_VAL); 
-    avg_adc_y    += (y_scale.read() / (double)MAX_ADC_VAL);
+    //avg_adc_x    += (x_scale.read() / (double)MAX_ADC_VAL);
+    //avg_adc_y    += (y_scale.read() / (double)MAX_ADC_VAL);
     avg_counter++;
 
     if(rw_flag && g_ret){
@@ -421,9 +462,12 @@ void loop(void)
         avg_adc_y = 0;
 
         avg_counter = 0;
-    } else if(!rw_flag && g_ret){
+    } else if(!rw_flag && g_ret){//when data is received by met1 but it's not time to log
         memset(g_Buffer, 0, strlen(g_Buffer));
         XBee.flush();
+        //reset global variables for checksum
+        g_sum = 0;
+        g_ctag = false;
     }
     
 }
