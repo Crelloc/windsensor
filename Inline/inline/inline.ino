@@ -122,6 +122,7 @@ static int get_string() //read the xbee buffer, return a flag if it's time to ex
                 g_Index = 0;
                 ret = 1;
                 g_beginning = false;
+                g_ctag = false;
                 g_sum = ~(g_sum - ' '); //remove space (that's before the ctage, ie, " c 123") from calculation and then invert g_sum
                 break;
             }
@@ -467,7 +468,6 @@ void loop(void)
         XBee.flush();
         //reset global variables for checksum
         g_sum = 0;
-        g_ctag = false;
     }
     
 }
